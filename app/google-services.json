@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "231147205527",
+    "firebase_url": "https://lift-5945b-default-rtdb.europe-west1.firebasedatabase.app",
+    "project_id": "lift-5945b",
+    "storage_bucket": "lift-5945b.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:231147205527:android:ebc1dd3cf84edd72610ad2",
+        "android_client_info": {
+          "package_name": "com.example.lift11"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "231147205527-qn3r75n6h5gp9824jh58aeojbh7rrnv9.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.lift11",
+            "certificate_hash": "3c1e852a2ba245e425cee8c868f64064c3b6c7ec"
+          }
+        },
+        {
+          "client_id": "231147205527-s7ihltkudk304lvrgemvgaqo2g6hb046.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyALjbQyf5M0deVYq9c8eOfKzN15CUcNOlY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "231147205527-s7ihltkudk304lvrgemvgaqo2g6hb046.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
