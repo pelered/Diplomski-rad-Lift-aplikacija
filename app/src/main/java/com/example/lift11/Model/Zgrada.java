@@ -7,6 +7,7 @@ public class Zgrada {
     private String u_uid;
     private ArrayList<String> lifts;
     private ArrayList<String> podzg;
+    private String key;
 
     private String zg_id;
 
@@ -57,7 +58,13 @@ public class Zgrada {
 
     }
 
+    public String getKey() {
+        return key;
+    }
 
+    public void setKey(String key) {
+        this.key = key;
+    }
 
     public String getIme() {
         return ime;
@@ -106,6 +113,7 @@ public class Zgrada {
                 ", u_uid='" + u_uid + '\'' +
                 ", lifts=" + lifts +
                 ", podzg=" + podzg +
+                ", key='" + key + '\'' +
                 ", zg_id='" + zg_id + '\'' +
                 '}';
     }

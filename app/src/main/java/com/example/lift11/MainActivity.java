@@ -121,7 +121,6 @@ import java.util.Map;
 
       private void postavi_vrijednosti() {
           vrti=true;
-
           int odabrani_lift=getRandomNumber(0,liftovi.size()-1);
           //Log.d("TAGput2:",liftovi.toString());
           //Log.d("TAGput3:", String.valueOf(odabrani_lift));
