@@ -4,6 +4,7 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.text.Editable;
@@ -163,16 +164,21 @@ public class DodajLift extends AppCompatActivity implements View.OnClickListener
                 if(naziv_pod.getText().toString().trim().equals("")){
                     //nema podzgradu
                     final Boolean[] postoji = {false};
+                    Log.d("Tu:","1");
                     lifts.forEach((element)->{
+                        Log.d("Tu:","1.1");
                         //svi liftovi korisnika
                         if(element.getIme().equals(naziv_lift.getText().toString())){
+                            Log.d("Tu:","1.2");
                             //trenutni lift iz liste svih liftova ima isti naziv kao i potencijalni novi lift
                             //ako postoji lift s tim nazivom provjeri dali pripada zgradi s istim nazivom
                             zg.forEach((el_zg)->{
+                                Log.d("Tu:","1.3");
 
 
                                 //popis svi zgrada korisnika
                                 if(el_zg.getLifts().contains(element.getKey()) && el_zg.getIme().equals(naziv_zg.getText().toString())){
+                                    Log.d("Tu:","1.4");
                                     //provjeravamo da trenutna zgrada u listi svojih liftova ima lift s novim nazivom
                                     postoji[0] =true;
                                     //ima isti naziv pa stavljamo na true
@@ -182,23 +188,26 @@ public class DodajLift extends AppCompatActivity implements View.OnClickListener
                         }
                     });
                     if(!postoji[0]){
+                        Log.d("Tu:","2");
                         //dodajemo novi lift
 
                         //provjera da ne bi dodali postojeci lift
                         //ne postoji radimo update bez dohvacanja key-a,samo lift spremamo
                         for(int i=0; i<zg.size();i++){
+                            Log.d("Tu:","2.1");
                             if(naziv_zg.getText().toString().equals(zg.get(i).getIme())){
+                                Log.d("Tu:","2.2");
                                 //dodajemo lift u postojecu zgradu
-
-
                                String key_lift;
                                 //spremi ako zgrada s tim nazivom nema lift tog naziva;
-
                                 key_lift=save_liftove(zg.get(i).getKey(),naziv_lift.getText().toString(),prefs.getString("u_uid",null));
                                 zg.get(i).getLifts().add(key_lift);
                                 save_zgrade_update(zg.get(i).getKey(),naziv_zg.getText().toString(),prefs.getString("u_uid",null),zg.get(i).getLifts());
 
+                                Intent intent = new Intent(this, Mjerenje.class);
+                                startActivity(intent);
                             }else if(i==zg.size()-1){
+                                Log.d("Tu:","2.3");
                                 //stvaramo novu zgradu s novim liftom
                                String key_zg,key_lift;
                                 ArrayList lifts=new ArrayList();
@@ -207,12 +216,15 @@ public class DodajLift extends AppCompatActivity implements View.OnClickListener
                                 key_lift=save_liftove(key_zg,naziv_lift.getText().toString(),prefs.getString("u_uid",null));
                                 lifts.add(key_lift);
                                 save_zgrade_update(key_zg,naziv_zg.getText().toString(),prefs.getString("u_uid",null),lifts);
+                                Intent intent = new Intent(this, Mjerenje.class);
+                                startActivity(intent);
                             }
                         }
                     }
 
                 }else{
                     //ima podzgradu
+                    Log.d("Tu:","3");
                     final Boolean[] postoji = {false};
                     lifts.forEach((element)->{
                         //svi liftovi korisnika
@@ -220,8 +232,6 @@ public class DodajLift extends AppCompatActivity implements View.OnClickListener
                             //trenutni lift iz liste svih liftova ima isti naziv kao i potencijalni novi list
                             //ako postoji lift s tim nazivom provjeri dali pripada zgradi s istim nazivom
                             zg.forEach((el_zg)->{
-
-
                                 //popis svi zgrada korisnika
                                 if(el_zg.getLifts().contains(element.getKey()) && el_zg.getIme().equals(naziv_zg.getText().toString())){
                                     //provjeravamo da trenutna zgrada u listi svojih liftova ima lift s novim nazivom
@@ -261,7 +271,8 @@ public class DodajLift extends AppCompatActivity implements View.OnClickListener
                                         save_pod_zgradu_update(el_podzg.getKey(),naziv_pod.getText().toString(),prefs.getString("u_uid",null),el_podzg.getLifts(),el_podzg.getZg_id());
                                         //azuriramo zgradu
                                         save_zgrade_update(el_podzg.getZg_id(),naziv_zg.getText().toString(),prefs.getString("u_uid",null),zg.get(finalI).getPodzg(),zg.get(finalI).getLifts());
-
+                                        Intent intent = new Intent(this, Mjerenje.class);
+                                        startActivity(intent);
 
                                     }
                                 });
@@ -279,6 +290,8 @@ public class DodajLift extends AppCompatActivity implements View.OnClickListener
                                     save_pod_zgradu_update(key_podzg,naziv_pod.getText().toString(),prefs.getString("u_uid",null),lifts,zg.get(i).getKey());
                                     //azuriramo zgradu
                                     save_zgrade_update(zg.get(i).getKey(),naziv_zg.getText().toString(),prefs.getString("u_uid",null),podzg,lifts);
+                                    Intent intent = new Intent(this, Mjerenje.class);
+                                    startActivity(intent);
                                 }
                             }else if(i==zg.size()-1){
                                 //stvaramo novu zgradu s novim liftom i novom podzgradom
@@ -295,6 +308,8 @@ public class DodajLift extends AppCompatActivity implements View.OnClickListener
                                 save_pod_zgradu_update(key_podzg,naziv_pod.getText().toString(),prefs.getString("u_uid",null),lifts,key_zg);
                                 //azuriramo zgradu
                                 save_zgrade_update(key_zg,naziv_zg.getText().toString(),prefs.getString("u_uid",null),podzg,lifts);
+                                Intent intent = new Intent(this, Mjerenje.class);
+                                startActivity(intent);
                             }
                         }
                     }
