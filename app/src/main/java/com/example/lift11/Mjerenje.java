@@ -128,6 +128,7 @@ public class Mjerenje extends AppCompatActivity implements View.OnClickListener 
                                     .signOut(getApplicationContext())
                                     .addOnCompleteListener(task -> {
                                         vrti=false;
+                                        Log.d("Key",lift_key);
                                         Map<String, Object> update = new HashMap<>();
                                         update.put("is_connected", false);
                                         myRef.child(lift_key).updateChildren(update).addOnCompleteListener(task1 -> {
