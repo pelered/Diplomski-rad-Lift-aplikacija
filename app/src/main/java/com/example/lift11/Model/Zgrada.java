@@ -36,7 +36,7 @@ public class Zgrada {
     }
 
 
-    public Zgrada(String u_uid,String ime,  ArrayList<String> lifts) {
+    public Zgrada(String ime,String u_uid,  ArrayList<String> lifts) {
         this.ime = ime;
         this.u_uid = u_uid;
         this.lifts = lifts;
@@ -50,7 +50,7 @@ public class Zgrada {
         //this.zg_id=zg_id;
 
     }*/
-    public Zgrada(String u_uid,String ime,  ArrayList<String> lifts,String zg_id) {
+    public Zgrada(String ime, String u_uid, ArrayList<String> lifts,String zg_id) {
         this.ime = ime;
         this.u_uid = u_uid;
         this.lifts = lifts;

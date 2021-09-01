@@ -52,7 +52,6 @@ public class DodajLift extends AppCompatActivity implements View.OnClickListener
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_dodaj_lift);
         prefs = Objects.requireNonNull(this).getSharedPreferences("shared_pref_name", Context.MODE_PRIVATE);
-
         dodaj=findViewById(R.id.gumb_dodaj_lift);
         naziv_zg=findViewById(R.id.naziv);
         naziv_pod=findViewById(R.id.podzg);
@@ -158,6 +157,8 @@ public class DodajLift extends AppCompatActivity implements View.OnClickListener
     public void onClick(View view) {
 
         if(view.equals(dodaj)){
+            SharedPreferences.Editor editor = prefs.edit();
+
             if(!naziv_zg.getText().toString().trim().equals("") && !naziv_lift.getText().toString().trim().equals("")
                     &&!n_k.getText().toString().trim().equals("") && !v_k.getText().toString().trim().equals("")){
                 //sva polja su popunjena
@@ -202,8 +203,11 @@ public class DodajLift extends AppCompatActivity implements View.OnClickListener
                                 //spremi ako zgrada s tim nazivom nema lift tog naziva;
                                 key_lift=save_liftove(zg.get(i).getKey(),naziv_lift.getText().toString(),prefs.getString("u_uid",null));
                                 zg.get(i).getLifts().add(key_lift);
+                                Log.d("Tu2.2.1:","key:"+zg.get(i).getKey()+"Ime:"+naziv_zg.getText().toString()+"User id:"+
+                                        prefs.getString("u_uid",null)+"Liftovi:"+zg.get(i).getLifts().toString());
                                 save_zgrade_update(zg.get(i).getKey(),naziv_zg.getText().toString(),prefs.getString("u_uid",null),zg.get(i).getLifts());
-
+                                editor.putString("lift_id",key_lift);
+                                editor.apply();
                                 Intent intent = new Intent(this, Mjerenje.class);
                                 startActivity(intent);
                             }else if(i==zg.size()-1){
@@ -216,6 +220,8 @@ public class DodajLift extends AppCompatActivity implements View.OnClickListener
                                 key_lift=save_liftove(key_zg,naziv_lift.getText().toString(),prefs.getString("u_uid",null));
                                 lifts.add(key_lift);
                                 save_zgrade_update(key_zg,naziv_zg.getText().toString(),prefs.getString("u_uid",null),lifts);
+                                editor.putString("lift_id",key_lift);
+                                editor.apply();
                                 Intent intent = new Intent(this, Mjerenje.class);
                                 startActivity(intent);
                             }
@@ -271,6 +277,8 @@ public class DodajLift extends AppCompatActivity implements View.OnClickListener
                                         save_pod_zgradu_update(el_podzg.getKey(),naziv_pod.getText().toString(),prefs.getString("u_uid",null),el_podzg.getLifts(),el_podzg.getZg_id());
                                         //azuriramo zgradu
                                         save_zgrade_update(el_podzg.getZg_id(),naziv_zg.getText().toString(),prefs.getString("u_uid",null),zg.get(finalI).getPodzg(),zg.get(finalI).getLifts());
+                                        editor.putString("lift_id",key_lift);
+                                        editor.apply();
                                         Intent intent = new Intent(this, Mjerenje.class);
                                         startActivity(intent);
 
@@ -290,6 +298,8 @@ public class DodajLift extends AppCompatActivity implements View.OnClickListener
                                     save_pod_zgradu_update(key_podzg,naziv_pod.getText().toString(),prefs.getString("u_uid",null),lifts,zg.get(i).getKey());
                                     //azuriramo zgradu
                                     save_zgrade_update(zg.get(i).getKey(),naziv_zg.getText().toString(),prefs.getString("u_uid",null),podzg,lifts);
+                                    editor.putString("lift_id",key_lift);
+                                    editor.apply();
                                     Intent intent = new Intent(this, Mjerenje.class);
                                     startActivity(intent);
                                 }
@@ -308,6 +318,8 @@ public class DodajLift extends AppCompatActivity implements View.OnClickListener
                                 save_pod_zgradu_update(key_podzg,naziv_pod.getText().toString(),prefs.getString("u_uid",null),lifts,key_zg);
                                 //azuriramo zgradu
                                 save_zgrade_update(key_zg,naziv_zg.getText().toString(),prefs.getString("u_uid",null),podzg,lifts);
+                                editor.putString("lift_id",key_lift);
+                                editor.apply();
                                 Intent intent = new Intent(this, Mjerenje.class);
                                 startActivity(intent);
                             }
@@ -335,10 +347,12 @@ public class DodajLift extends AppCompatActivity implements View.OnClickListener
     }
     private void save_zgrade_update(String key,String zgrada,String user,ArrayList<String> lista_liftova) {
        myRef=database.getInstance().getReference("Projekti/Zgrade");
+        Log.d("Tu5.1","Key:"+key+"Ime:"+zgrada+"User_id:"+user+"Liftovi:"+lista_liftova.toString());
+
         zgrada_obj=new Zgrada(zgrada,user,lista_liftova);
+        Log.d("Tu5",zgrada_obj.toString());
         Map<String, Object> childUpdates2 = new HashMap<>();
         childUpdates2.put( key, zgrada_obj);
-
         myRef.updateChildren(childUpdates2);
 
     }
