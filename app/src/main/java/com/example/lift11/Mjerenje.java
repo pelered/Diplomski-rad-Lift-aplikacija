@@ -21,6 +21,7 @@ import android.widget.TextView;
 import com.example.lift11.Model.Lift;
 import com.example.lift11.Model.Lift_state;
 import com.example.lift11.Model.Lift_travels;
+import com.example.lift11.Model.State;
 import com.firebase.ui.auth.AuthUI;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
@@ -39,7 +40,7 @@ import java.util.Map;
 
 public class Mjerenje extends AppCompatActivity implements View.OnClickListener {
     private FirebaseDatabase database;
-    private DatabaseReference myRef,myRef2;
+    private DatabaseReference myRef,myRef2,myRef3;
     private boolean vrti;
     private SharedPreferences prefs;
     private Button start_mj,stop_mj,log_out;
@@ -53,6 +54,7 @@ public class Mjerenje extends AppCompatActivity implements View.OnClickListener 
     private int n_k;//najnizi kat
     private int v_k;//najvisi kat
     float batteryPct;
+    private State state;
     private AlertDialog.Builder builder;
     private TextView zgrada,podzg,lift_naziv,mjeri;
     private BroadcastReceiver mBatInfoReceiver = new BroadcastReceiver(){
@@ -88,6 +90,19 @@ public class Mjerenje extends AppCompatActivity implements View.OnClickListener 
         }
 
         myRef=database.getInstance().getReference("Liftovi");
+        myRef3=database.getInstance().getReference("Stanje");
+        myRef3.child(lift_key).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull @NotNull DataSnapshot snapshot) {
+                state=snapshot.getValue(State.class);
+                state.setKey(snapshot.getKey());
+            }
+
+            @Override
+            public void onCancelled(@NonNull @NotNull DatabaseError error) {
+
+            }
+        });
         myRef.child(lift_key).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull @NotNull DataSnapshot snapshot) {
@@ -110,11 +125,20 @@ public class Mjerenje extends AppCompatActivity implements View.OnClickListener 
         if(view.equals(start_mj)){
             vrti=true;
             mjeri.setText("Mjeri");
+            state.setState(true);
+            Map<String, Object> up = new HashMap<>();
+            up.put("state", state.getState());
+            myRef3.updateChildren(up);
             postavi_vrijednosti();
 
         }
         else if(view.equals(stop_mj)){
             vrti=false;
+            mjeri.setText("Mjeri");
+            state.setState(false);
+            Map<String, Object> up = new HashMap<>();
+            up.put("state", state.getState());
+            myRef3.updateChildren(up);
             mjeri.setText("Zaustavljeno mjerenje");
 
         }
@@ -128,7 +152,11 @@ public class Mjerenje extends AppCompatActivity implements View.OnClickListener 
                                     .signOut(getApplicationContext())
                                     .addOnCompleteListener(task -> {
                                         vrti=false;
-                                        Log.d("Key",lift_key);
+                                        state.setState(false);
+                                        Map<String, Object> up = new HashMap<>();
+                                        up.put("state", state.getState());
+                                        myRef3.updateChildren(up);
+                                        //Log.d("Key",lift_key);
                                         Map<String, Object> update = new HashMap<>();
                                         update.put("is_connected", false);
                                         myRef.child(lift_key).updateChildren(update).addOnCompleteListener(task1 -> {
@@ -183,7 +211,7 @@ public class Mjerenje extends AppCompatActivity implements View.OnClickListener 
             public void onFinish() {
                 String end_time = Calendar.getInstance().getTime().toString();
                 liftTravels =new Lift_travels(p_k,z_k,n_k,v_k,start_time,end_time,count_p,lift.getZgrada(),lift.getPod_zg(),lift.getKey());
-                System.out.println("TEST: "+liftTravels.toString());
+                //System.out.println("TEST: "+liftTravels.toString());
 
                 lift_state=new Lift_state(Integer.toString(z_k),Integer.toString(count_p),String.valueOf(batteryPct) + "%","miruje");
                 Map<String, Object> childUpdates = new HashMap<>();

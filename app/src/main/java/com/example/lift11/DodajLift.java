@@ -42,11 +42,8 @@ public class DodajLift extends AppCompatActivity implements View.OnClickListener
     private ArrayList<Zgrada> zg,podzg;
     private ArrayList<Lift> lifts;
     private Zgrada zgrada_obj;
-    private Lift_travels liftTravels;
     private Lift lift;
     private SharedPreferences prefs;
-    private String odabir;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -336,7 +333,6 @@ public class DodajLift extends AppCompatActivity implements View.OnClickListener
     }
     private void save_zgrade_update(String key,String zgrada,String user,ArrayList<String> pod_zgrada,ArrayList<String> lista_liftova) {
         myRef=database.getInstance().getReference("Projekti/Zgrade");
-
         zgrada_obj=new Zgrada(zgrada,user,pod_zgrada,lista_liftova);
         Map<String, Object> childUpdates2 = new HashMap<>();
         childUpdates2.put( key, zgrada_obj);
@@ -382,7 +378,7 @@ public class DodajLift extends AppCompatActivity implements View.OnClickListener
     }
     private void save_pod_zgradu_update(String key, String podzgrada, String user, ArrayList<String> lista_liftova, String zg_id){
         myRef= FirebaseDatabase.getInstance().getReference("Projekti/Podzgrade");
-        zgrada_obj=new Zgrada(user,podzgrada,lista_liftova,zg_id);
+        zgrada_obj=new Zgrada(podzgrada,user,lista_liftova,zg_id);
         Map<String, Object> childUpdates2 = new HashMap<>();
         childUpdates2.put( key, zgrada_obj);
 
