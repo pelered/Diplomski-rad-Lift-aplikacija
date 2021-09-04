@@ -23,14 +23,12 @@ import com.example.lift11.Model.Lift_state;
 import com.example.lift11.Model.Lift_travels;
 import com.example.lift11.Model.State;
 import com.firebase.ui.auth.AuthUI;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
-import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.messaging.FirebaseMessaging;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -40,7 +38,7 @@ import java.util.Map;
 
 public class Mjerenje extends AppCompatActivity implements View.OnClickListener {
     private FirebaseDatabase database;
-    private DatabaseReference myRef,myRef2,myRef3;
+    private DatabaseReference myRef,myRef2,myRef3,myRef4;
     private boolean vrti;
     private SharedPreferences prefs;
     private Button start_mj,stop_mj,log_out;
@@ -54,8 +52,9 @@ public class Mjerenje extends AppCompatActivity implements View.OnClickListener 
     private int n_k;//najnizi kat
     private int v_k;//najvisi kat
     float batteryPct;
-    private State state;
+    private State state_mjeri_li;
     private AlertDialog.Builder builder;
+    private String id_user;
     private TextView zgrada,podzg,lift_naziv,mjeri;
     private BroadcastReceiver mBatInfoReceiver = new BroadcastReceiver(){
         @Override
@@ -84,18 +83,35 @@ public class Mjerenje extends AppCompatActivity implements View.OnClickListener 
         builder = new AlertDialog.Builder(this);
         log_out.setOnClickListener(this);
         start_mj.setOnClickListener(this);
+
         stop_mj.setOnClickListener(this);
         if (!vrti){
             mjeri.setText("Zaustavljeno mjerenje");
         }
 
+        state_mjeri_li =new State();
         myRef=database.getInstance().getReference("Liftovi");
         myRef3=database.getInstance().getReference("Stanje");
-        myRef3.child(lift_key).addListenerForSingleValueEvent(new ValueEventListener() {
+        myRef4=database.getInstance().getReference("Mjeri");
+        myRef4.child(lift_key).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull @NotNull DataSnapshot snapshot) {
-                state=snapshot.getValue(State.class);
-                state.setKey(snapshot.getKey());
+                Log.d("Mjeri",snapshot.toString());
+                if(snapshot.getValue()==null){
+
+                    state_mjeri_li.setU_uid(prefs.getString("u_uid", null));
+                    if(vrti){
+                        state_mjeri_li.setState(true);
+                    }else{
+                        state_mjeri_li.setState(false);
+                    }
+                }else{
+                        state_mjeri_li =snapshot.getValue(State.class);
+                        state_mjeri_li.setKey(snapshot.getKey());
+
+
+                }
+
             }
 
             @Override
@@ -103,6 +119,38 @@ public class Mjerenje extends AppCompatActivity implements View.OnClickListener 
 
             }
         });
+        FirebaseMessaging.getInstance().getToken()
+                .addOnCompleteListener(task -> {
+                    if (!task.isSuccessful()) {
+                        Log.w("tag1", "Fetching FCM registration token failed", task.getException());
+                        return;
+                    }
+                    // Get new FCM registration token
+                    String token = task.getResult();
+                    // Log and toast
+                    if(state_mjeri_li != null ){
+                        if(state_mjeri_li.getFcmTokens()!=null){
+                            if(!state_mjeri_li.getFcmTokens().equals(token)){
+                                state_mjeri_li.setFcmTokens(token);
+                            }
+                        }else{
+                            state_mjeri_li.setFcmTokens(token);
+                        }
+
+
+                    }else{
+                        state_mjeri_li =new State();
+                        state_mjeri_li.setU_uid(prefs.getString("u_uid", null));
+                        if(vrti){
+                            state_mjeri_li.setState(true);
+                        }else{
+                            state_mjeri_li.setState(false);
+                        }
+                        state_mjeri_li.setFcmTokens(token);
+                    }
+                    Log.d("tag", token);
+                    //Toast.makeText(this, token, Toast.LENGTH_SHORT).show();
+                });
         myRef.child(lift_key).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull @NotNull DataSnapshot snapshot) {
@@ -125,20 +173,22 @@ public class Mjerenje extends AppCompatActivity implements View.OnClickListener 
         if(view.equals(start_mj)){
             vrti=true;
             mjeri.setText("Mjeri");
-            state.setState(true);
+            state_mjeri_li.setState(true);
             Map<String, Object> up = new HashMap<>();
-            up.put("state", state.getState());
-            myRef3.updateChildren(up);
+            up.put(lift_key, state_mjeri_li);
+            myRef4.updateChildren(up);
+
+
             postavi_vrijednosti();
 
         }
         else if(view.equals(stop_mj)){
             vrti=false;
             mjeri.setText("Mjeri");
-            state.setState(false);
+            state_mjeri_li.setState(false);
             Map<String, Object> up = new HashMap<>();
-            up.put("state", state.getState());
-            myRef3.updateChildren(up);
+            up.put(lift_key, state_mjeri_li);
+            myRef4.updateChildren(up);
             mjeri.setText("Zaustavljeno mjerenje");
 
         }
@@ -152,10 +202,10 @@ public class Mjerenje extends AppCompatActivity implements View.OnClickListener 
                                     .signOut(getApplicationContext())
                                     .addOnCompleteListener(task -> {
                                         vrti=false;
-                                        state.setState(false);
+                                        state_mjeri_li.setState(false);
                                         Map<String, Object> up = new HashMap<>();
-                                        up.put("state", state.getState());
-                                        myRef3.updateChildren(up);
+                                        up.put(lift_key, state_mjeri_li);
+                                        myRef4.updateChildren(up);
                                         //Log.d("Key",lift_key);
                                         Map<String, Object> update = new HashMap<>();
                                         update.put("is_connected", false);
@@ -200,7 +250,6 @@ public class Mjerenje extends AppCompatActivity implements View.OnClickListener 
                 Log.d("Tik:", String.valueOf(p_k_t[0])+", "+String.valueOf(l)+","+String.valueOf(z_k));
                 lift_state=new Lift_state(Integer.toString(p_k_t[0]),Integer.toString(count_p),String.valueOf(batteryPct) + "%","u pokretu");
                 p_k_t[0] = p_k_t[0] +1;
-
                 Map<String, Object> childUpdates = new HashMap<>();
                 childUpdates.put( lift.getKey(), lift_state);
                 myRef2.updateChildren(childUpdates);
@@ -249,5 +298,12 @@ public class Mjerenje extends AppCompatActivity implements View.OnClickListener 
     }
     public int getRandomNumber(int min, int max) {
         return (int) ((Math.random() * (max - min)) + min);
+    }
+
+    //cloud mesaging
+    @Override
+    public void onPointerCaptureChanged(boolean hasCapture) {
+        Log.d("Pointer:", String.valueOf(hasCapture));
+
     }
 }
