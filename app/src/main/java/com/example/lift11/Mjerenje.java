@@ -35,6 +35,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 public class Mjerenje extends AppCompatActivity implements View.OnClickListener {
     private FirebaseDatabase database;
@@ -119,6 +120,35 @@ public class Mjerenje extends AppCompatActivity implements View.OnClickListener 
 
             }
         });
+        myRef4.child(lift_key).addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull @NotNull DataSnapshot snapshot) {
+                Log.d("Data",snapshot.getValue().toString());
+                if(!Objects.requireNonNull(snapshot.getValue(State.class)).getState()){
+
+                    vrti=false;
+                    state_mjeri_li.setState(false);
+                    Map<String, Object> up = new HashMap<>();
+                    up.put(lift_key, state_mjeri_li);
+                    myRef4.updateChildren(up);
+                    mjeri.setText("Zaustavljeno mjerenje");
+                }else if(Objects.requireNonNull(snapshot.getValue(State.class)).getState()){
+                    vrti=true;
+                    mjeri.setText("Mjeri");
+                    state_mjeri_li.setState(true);
+                    Map<String, Object> up = new HashMap<>();
+                    up.put(lift_key, state_mjeri_li);
+                    myRef4.updateChildren(up);
+
+                    postavi_vrijednosti();
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull @NotNull DatabaseError error) {
+
+            }
+        });
         FirebaseMessaging.getInstance().getToken()
                 .addOnCompleteListener(task -> {
                     if (!task.isSuccessful()) {
@@ -177,7 +207,6 @@ public class Mjerenje extends AppCompatActivity implements View.OnClickListener 
             Map<String, Object> up = new HashMap<>();
             up.put(lift_key, state_mjeri_li);
             myRef4.updateChildren(up);
-
 
             postavi_vrijednosti();
 
