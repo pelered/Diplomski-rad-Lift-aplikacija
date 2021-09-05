@@ -3,6 +3,9 @@ package com.example.lift11;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.lifecycle.Lifecycle;
+import androidx.lifecycle.LifecycleObserver;
+import androidx.lifecycle.OnLifecycleEvent;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -15,8 +18,10 @@ import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.util.Log;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.example.lift11.Model.Lift;
 import com.example.lift11.Model.Lift_state;
@@ -28,7 +33,6 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
-import com.google.firebase.messaging.FirebaseMessaging;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -37,9 +41,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
-public class Mjerenje extends AppCompatActivity implements View.OnClickListener {
+public class Mjerenje extends AppCompatActivity implements View.OnClickListener, LifecycleObserver {
     private FirebaseDatabase database;
-    private DatabaseReference myRef,myRef2,myRef3,myRef4;
+    private DatabaseReference myRefLift,myRef2, myRefVoznja, myRefMjeri;
     private boolean vrti;
     private SharedPreferences prefs;
     private Button start_mj,stop_mj,log_out;
@@ -70,6 +74,7 @@ public class Mjerenje extends AppCompatActivity implements View.OnClickListener 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_mjerenje);
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         this.registerReceiver(this.mBatInfoReceiver, new IntentFilter(Intent.ACTION_BATTERY_CHANGED));
         prefs = getSharedPreferences("shared_pref_name", Context.MODE_PRIVATE);
         lift_key=prefs.getString("lift_id",null);
@@ -91,57 +96,54 @@ public class Mjerenje extends AppCompatActivity implements View.OnClickListener 
         }
 
         state_mjeri_li =new State();
-        myRef=database.getInstance().getReference("Liftovi");
-        myRef3=database.getInstance().getReference("Stanje");
-        myRef4=database.getInstance().getReference("Mjeri");
-        myRef4.child(lift_key).addListenerForSingleValueEvent(new ValueEventListener() {
+        myRefLift =database.getInstance().getReference("Liftovi");
+        myRefMjeri =database.getInstance().getReference("Mjeri");
+        myRefMjeri.child(lift_key).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull @NotNull DataSnapshot snapshot) {
-                Log.d("Mjeri",snapshot.toString());
+                //Log.d("Mjeri",snapshot.toString());
                 if(snapshot.getValue()==null){
-
                     state_mjeri_li.setU_uid(prefs.getString("u_uid", null));
                     if(vrti){
                         state_mjeri_li.setState(true);
                     }else{
                         state_mjeri_li.setState(false);
                     }
+                    Map<String, Object> up = new HashMap<>();
+                    up.put(lift_key, state_mjeri_li);
+                    myRefMjeri.updateChildren(up);
                 }else{
                         state_mjeri_li =snapshot.getValue(State.class);
-                        state_mjeri_li.setKey(snapshot.getKey());
-
-
                 }
-
             }
-
             @Override
             public void onCancelled(@NonNull @NotNull DatabaseError error) {
 
             }
         });
-        myRef4.child(lift_key).addValueEventListener(new ValueEventListener() {
+        myRefMjeri.child(lift_key).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull @NotNull DataSnapshot snapshot) {
-                Log.d("Data",snapshot.getValue().toString());
-                if(!Objects.requireNonNull(snapshot.getValue(State.class)).getState()){
-
-                    vrti=false;
-                    state_mjeri_li.setState(false);
-                    Map<String, Object> up = new HashMap<>();
-                    up.put(lift_key, state_mjeri_li);
-                    myRef4.updateChildren(up);
-                    mjeri.setText("Zaustavljeno mjerenje");
-                }else if(Objects.requireNonNull(snapshot.getValue(State.class)).getState()){
-                    vrti=true;
-                    mjeri.setText("Mjeri");
-                    state_mjeri_li.setState(true);
-                    Map<String, Object> up = new HashMap<>();
-                    up.put(lift_key, state_mjeri_li);
-                    myRef4.updateChildren(up);
-
-                    postavi_vrijednosti();
+                //Log.d("Data", String.valueOf(snapshot));
+                if(snapshot.getValue()!=null){
+                    if(!Objects.requireNonNull(snapshot.getValue(State.class)).getState()){
+                        vrti=false;
+                        state_mjeri_li.setState(false);
+                        Map<String, Object> up = new HashMap<>();
+                        up.put(lift_key, state_mjeri_li);
+                        myRefMjeri.updateChildren(up);
+                        mjeri.setText("Zaustavljeno mjerenje");
+                    }else if(Objects.requireNonNull(snapshot.getValue(State.class)).getState()){
+                        vrti=true;
+                        mjeri.setText("Mjeri");
+                        state_mjeri_li.setState(true);
+                        Map<String, Object> up = new HashMap<>();
+                        up.put(lift_key, state_mjeri_li);
+                        myRefMjeri.updateChildren(up);
+                        postavi_vrijednosti();
+                    }
                 }
+
             }
 
             @Override
@@ -149,39 +151,8 @@ public class Mjerenje extends AppCompatActivity implements View.OnClickListener 
 
             }
         });
-        FirebaseMessaging.getInstance().getToken()
-                .addOnCompleteListener(task -> {
-                    if (!task.isSuccessful()) {
-                        Log.w("tag1", "Fetching FCM registration token failed", task.getException());
-                        return;
-                    }
-                    // Get new FCM registration token
-                    String token = task.getResult();
-                    // Log and toast
-                    if(state_mjeri_li != null ){
-                        if(state_mjeri_li.getFcmTokens()!=null){
-                            if(!state_mjeri_li.getFcmTokens().equals(token)){
-                                state_mjeri_li.setFcmTokens(token);
-                            }
-                        }else{
-                            state_mjeri_li.setFcmTokens(token);
-                        }
 
-
-                    }else{
-                        state_mjeri_li =new State();
-                        state_mjeri_li.setU_uid(prefs.getString("u_uid", null));
-                        if(vrti){
-                            state_mjeri_li.setState(true);
-                        }else{
-                            state_mjeri_li.setState(false);
-                        }
-                        state_mjeri_li.setFcmTokens(token);
-                    }
-                    Log.d("tag", token);
-                    //Toast.makeText(this, token, Toast.LENGTH_SHORT).show();
-                });
-        myRef.child(lift_key).addListenerForSingleValueEvent(new ValueEventListener() {
+        myRefLift.child(lift_key).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull @NotNull DataSnapshot snapshot) {
                 lift=snapshot.getValue(Lift.class);
@@ -206,7 +177,7 @@ public class Mjerenje extends AppCompatActivity implements View.OnClickListener 
             state_mjeri_li.setState(true);
             Map<String, Object> up = new HashMap<>();
             up.put(lift_key, state_mjeri_li);
-            myRef4.updateChildren(up);
+            myRefMjeri.updateChildren(up);
 
             postavi_vrijednosti();
 
@@ -217,50 +188,67 @@ public class Mjerenje extends AppCompatActivity implements View.OnClickListener 
             state_mjeri_li.setState(false);
             Map<String, Object> up = new HashMap<>();
             up.put(lift_key, state_mjeri_li);
-            myRef4.updateChildren(up);
+            myRefMjeri.updateChildren(up);
             mjeri.setText("Zaustavljeno mjerenje");
 
         }
         else if(view.equals(log_out)){
             //ovdje
-            builder.setMessage("Želite li odspojiti senzor od lifta i zaustiviti mjerenje?")
-                    .setCancelable(false)
-                    .setPositiveButton("Da", new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int id) {
-                            AuthUI.getInstance()
-                                    .signOut(getApplicationContext())
-                                    .addOnCompleteListener(task -> {
-                                        vrti=false;
-                                        state_mjeri_li.setState(false);
-                                        Map<String, Object> up = new HashMap<>();
-                                        up.put(lift_key, state_mjeri_li);
-                                        myRef4.updateChildren(up);
-                                        //Log.d("Key",lift_key);
-                                        Map<String, Object> update = new HashMap<>();
-                                        update.put("is_connected", false);
-                                        myRef.child(lift_key).updateChildren(update).addOnCompleteListener(task1 -> {
-                                            if (task.isSuccessful()) {Log.d("Uspjeh","d");}
+            if(vrti){
+                Toast.makeText(this,"Morate prvo zaustaviti mjerenje da biste se mogli odjaviti",Toast.LENGTH_SHORT).show();
+            }else{
+                builder.setMessage("Želite li odspojiti senzor od lifta i zaustaviti mjerenje?")
+                        .setCancelable(false)
+                        .setPositiveButton("Da", new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int id) {
+                                AuthUI.getInstance()
+                                        .signOut(getApplicationContext())
+                                        .addOnCompleteListener(task -> {
+                                            vrti=false;
+                                            state_mjeri_li.setState(false);
+                                            Map<String, Object> up = new HashMap<>();
+                                            up.put(lift_key, state_mjeri_li);
+                                            myRefMjeri.updateChildren(up);
+                                            Log.d("Key",lift_key);
+                                            Log.d("State",state_mjeri_li.toString());
+                                            lift.setIs_connected(false);
+
+                                            Map<String, Object> update1 = new HashMap<>();
+                                            update1.put("is_connected", false);
+                                            // user is now signed out
+                                            SharedPreferences prefs = getSharedPreferences("shared_pref_name", Context.MODE_PRIVATE);
+                                            SharedPreferences.Editor editor = prefs.edit();
+                                            editor.clear();
+                                            editor.apply();
+                                            Log.d("Lift2:",lift.toString());
+                                            //todo ne stavi false svaki put pri odjavi
+                                            Log.d("Lift2.2:",myRefLift.toString());
+
+
+                                            myRefLift.child(lift_key).updateChildren(update1).addOnCompleteListener(task1 -> {
+
+                                                if (task.isSuccessful()) {Log.d("Uspjeh","d");
+                                                    startActivity(new Intent(Mjerenje.this, Login.class));
+                                                    finish();}
+                                                if(task.isCanceled()){Log.d("Neuspjeh",task.getResult().toString());}
+
+                                            });
+
 
                                         });
-                                        // user is now signed out
-                                        SharedPreferences prefs = getSharedPreferences("shared_pref_name", Context.MODE_PRIVATE);
-                                        SharedPreferences.Editor editor = prefs.edit();
-                                        editor.clear();
-                                        editor.apply();
-                                        startActivity(new Intent(Mjerenje.this, Login.class));
-                                        finish();
-                                    });
 
-                        }
-                    })
-                    .setNegativeButton("Ne", new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int id) {
-                            //  Action for 'NO' Button
-                            dialog.cancel();
-                        }
-                    });
-            AlertDialog alert = builder.create();
-            alert.show();
+                            }
+                        })
+                        .setNegativeButton("Ne", new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int id) {
+                                //  Action for 'NO' Button
+                                dialog.cancel();
+                            }
+                        });
+                AlertDialog alert = builder.create();
+                alert.show();
+            }
+
 
 
         }
@@ -272,6 +260,7 @@ public class Mjerenje extends AppCompatActivity implements View.OnClickListener 
         myRef2=database.getInstance().getReference("Stanje");
         String start_time = Calendar.getInstance().getTime().toString();
         final int[] p_k_t = {p_k};
+
         mCountDownTimer = new CountDownTimer((z_k-p_k)*1000, 1000) {
             @Override
             public void onTick(long l) {
@@ -319,11 +308,11 @@ public class Mjerenje extends AppCompatActivity implements View.OnClickListener 
     }
 
     private void save_data_travels() {
-        myRef=database.getInstance().getReference("Putovanja");
-        String key=myRef.push().getKey();
+        myRefVoznja =database.getInstance().getReference("Putovanja");
+        String key= myRefVoznja.push().getKey();
         Map<String, Object> childUpdates = new HashMap<>();
         childUpdates.put( key, liftTravels);
-        myRef.updateChildren(childUpdates);
+        myRefVoznja.updateChildren(childUpdates);
     }
     public int getRandomNumber(int min, int max) {
         return (int) ((Math.random() * (max - min)) + min);
@@ -335,4 +324,49 @@ public class Mjerenje extends AppCompatActivity implements View.OnClickListener 
         Log.d("Pointer:", String.valueOf(hasCapture));
 
     }
+    @OnLifecycleEvent(Lifecycle.Event.ON_RESUME)
+    public void onResume() {
+        super.onResume();
+        prefs = getSharedPreferences("shared_pref_name", Context.MODE_PRIVATE);
+
+        myRefMjeri.child(lift_key).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull @NotNull DataSnapshot snapshot) {
+                Log.d("Mjeri", snapshot.toString());
+                if (snapshot.getValue() == null) {
+                    state_mjeri_li.setU_uid(prefs.getString("u_uid", null));
+                    if (vrti) {
+                        state_mjeri_li.setState(true);
+                    } else {
+                        state_mjeri_li.setState(false);
+                    }
+                } else {
+                    state_mjeri_li = snapshot.getValue(State.class);
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull @NotNull DatabaseError error) {
+
+            }
+        });
+
+
+        myRefLift.child(lift_key).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull @NotNull DataSnapshot snapshot) {
+                lift = snapshot.getValue(Lift.class);
+                lift.setKey(snapshot.getKey());
+                lift_naziv.setText(lift.getIme());
+                n_k = lift.getN_k();
+                v_k = lift.getV_k();
+            }
+
+            @Override
+            public void onCancelled(@NonNull @NotNull DatabaseError error) {
+
+            }
+        });
+    }
+
 }

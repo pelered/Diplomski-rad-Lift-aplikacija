@@ -4,15 +4,13 @@ public class State {
     private Boolean state;
     private String key;
     private String u_uid;
-    private String fcmTokens;
     public State() {
 
     }
 
-    public State(Boolean state, String u_uid, String fcmTokens) {
+    public State(Boolean state, String u_uid) {
         this.state = state;
         this.u_uid = u_uid;
-        this.fcmTokens = fcmTokens;
     }
 
 
@@ -22,17 +20,10 @@ public class State {
                 "state=" + state +
                 ", key='" + key + '\'' +
                 ", u_uid='" + u_uid + '\'' +
-                ", fcmTokens='" + fcmTokens + '\'' +
                 '}';
     }
 
-    public String getFcmTokens() {
-        return fcmTokens;
-    }
 
-    public void setFcmTokens(String fcmTokens) {
-        this.fcmTokens = fcmTokens;
-    }
 
     public String getU_uid() {
         return u_uid;

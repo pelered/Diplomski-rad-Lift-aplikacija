@@ -18,7 +18,6 @@ import android.widget.EditText;
 import android.widget.Toast;
 
 import com.example.lift11.Model.Lift;
-import com.example.lift11.Model.Lift_travels;
 import com.example.lift11.Model.Zgrada;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -63,6 +62,9 @@ public class DodajLift extends AppCompatActivity implements View.OnClickListener
 
         dohvati_podatke();
         dodaj.setOnClickListener(this);
+        if(naziv_zg.getText().equals("")){
+            naziv_pod.setEnabled(false);
+        }
         naziv_zg.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
@@ -172,8 +174,6 @@ public class DodajLift extends AppCompatActivity implements View.OnClickListener
                             //ako postoji lift s tim nazivom provjeri dali pripada zgradi s istim nazivom
                             zg.forEach((el_zg)->{
                                 Log.d("Tu:","1.3");
-
-
                                 //popis svi zgrada korisnika
                                 if(el_zg.getLifts().contains(element.getKey()) && el_zg.getIme().equals(naziv_zg.getText().toString())){
                                     Log.d("Tu:","1.4");
@@ -191,38 +191,58 @@ public class DodajLift extends AppCompatActivity implements View.OnClickListener
 
                         //provjera da ne bi dodali postojeci lift
                         //ne postoji radimo update bez dohvacanja key-a,samo lift spremamo
-                        for(int i=0; i<zg.size();i++){
-                            Log.d("Tu:","2.1");
-                            if(naziv_zg.getText().toString().equals(zg.get(i).getIme())){
-                                Log.d("Tu:","2.2");
-                                //dodajemo lift u postojecu zgradu
-                               String key_lift;
-                                //spremi ako zgrada s tim nazivom nema lift tog naziva;
-                                key_lift=save_liftove(zg.get(i).getKey(),naziv_lift.getText().toString(),prefs.getString("u_uid",null));
-                                zg.get(i).getLifts().add(key_lift);
-                                Log.d("Tu2.2.1:","key:"+zg.get(i).getKey()+"Ime:"+naziv_zg.getText().toString()+"User id:"+
-                                        prefs.getString("u_uid",null)+"Liftovi:"+zg.get(i).getLifts().toString());
-                                save_zgrade_update(zg.get(i).getKey(),naziv_zg.getText().toString(),prefs.getString("u_uid",null),zg.get(i).getLifts());
-                                editor.putString("lift_id",key_lift);
-                                editor.apply();
-                                Intent intent = new Intent(this, Mjerenje.class);
-                                startActivity(intent);
-                            }else if(i==zg.size()-1){
-                                Log.d("Tu:","2.3");
-                                //stvaramo novu zgradu s novim liftom
-                               String key_zg,key_lift;
-                                ArrayList lifts=new ArrayList();
-                                //spremi ako zgrada s tim nazivom nema lift tog naziva;
-                                key_zg=save_zgradu(naziv_zg.getText().toString(),prefs.getString("u_uid",null));
-                                key_lift=save_liftove(key_zg,naziv_lift.getText().toString(),prefs.getString("u_uid",null));
-                                lifts.add(key_lift);
-                                save_zgrade_update(key_zg,naziv_zg.getText().toString(),prefs.getString("u_uid",null),lifts);
-                                editor.putString("lift_id",key_lift);
-                                editor.apply();
-                                Intent intent = new Intent(this, Mjerenje.class);
-                                startActivity(intent);
+                        if(zg.size()==0){
+                            //ako uopce ne postoji nijedna zgrada
+                            Log.d("Tu:","2.0");
+
+                            String key_zg,key_lift;
+                            ArrayList lifts=new ArrayList();
+                            //spremi ako zgrada s tim nazivom nema lift tog naziva;
+                            key_zg=save_zgradu(naziv_zg.getText().toString(),prefs.getString("u_uid",null));
+                            key_lift= save_liftoveZg(key_zg,naziv_lift.getText().toString(),prefs.getString("u_uid",null));
+                            lifts.add(key_lift);
+                            save_zgrade_update(key_zg,naziv_zg.getText().toString(),prefs.getString("u_uid",null),lifts);
+                            editor.putString("lift_id",key_lift);
+                            editor.apply();
+                            Intent intent = new Intent(this, Mjerenje.class);
+                            startActivity(intent);
+                        }else{
+                            for(int i=0; i<zg.size();i++){
+                                Log.d("Tu:","2.1");
+                                if(naziv_zg.getText().toString().equals(zg.get(i).getIme())){
+                                    Log.d("Tu:","2.2");
+                                    //dodajemo lift u postojecu zgradu
+                                    String key_lift;
+                                    //spremi ako zgrada s tim nazivom nema lift tog naziva;
+                                    Log.d("Tu2.2.1:","key:"+zg.get(i).getKey()+"Ime:"+naziv_zg.getText().toString()+"User id:"+
+                                            prefs.getString("u_uid",null)+"Liftovi:"+zg.get(i).getLifts().toString());
+                                    key_lift= save_liftoveZg(zg.get(i).getKey(),naziv_lift.getText().toString(),prefs.getString("u_uid",null));
+                                    zg.get(i).getLifts().add(key_lift);
+                                    Log.d("Tu2.2.1:","key:"+zg.get(i).getKey()+"Ime:"+naziv_zg.getText().toString()+"User id:"+
+                                            prefs.getString("u_uid",null)+"Liftovi:"+zg.get(i).getLifts().toString());
+                                    save_zgrade_update(zg.get(i).getKey(),naziv_zg.getText().toString(),prefs.getString("u_uid",null),zg.get(i).getLifts());
+                                    editor.putString("lift_id",key_lift);
+                                    editor.apply();
+                                    Intent intent = new Intent(this, Mjerenje.class);
+                                    startActivity(intent);
+                                }else if(i==zg.size()-1){
+                                    Log.d("Tu:","2.3");
+                                    //stvaramo novu zgradu s novim liftom
+                                    String key_zg,key_lift;
+                                    ArrayList lifts=new ArrayList();
+                                    //spremi ako zgrada s tim nazivom nema lift tog naziva;
+                                    key_zg=save_zgradu(naziv_zg.getText().toString(),prefs.getString("u_uid",null));
+                                    key_lift= save_liftoveZg(key_zg,naziv_lift.getText().toString(),prefs.getString("u_uid",null));
+                                    lifts.add(key_lift);
+                                    save_zgrade_update(key_zg,naziv_zg.getText().toString(),prefs.getString("u_uid",null),lifts);
+                                    editor.putString("lift_id",key_lift);
+                                    editor.apply();
+                                    Intent intent = new Intent(this, Mjerenje.class);
+                                    startActivity(intent);
+                                }
                             }
                         }
+
                     }
 
                 }else{
@@ -344,7 +364,6 @@ public class DodajLift extends AppCompatActivity implements View.OnClickListener
     private void save_zgrade_update(String key,String zgrada,String user,ArrayList<String> lista_liftova) {
        myRef=database.getInstance().getReference("Projekti/Zgrade");
         Log.d("Tu5.1","Key:"+key+"Ime:"+zgrada+"User_id:"+user+"Liftovi:"+lista_liftova.toString());
-
         zgrada_obj=new Zgrada(zgrada,user,lista_liftova);
         Log.d("Tu5",zgrada_obj.toString());
         Map<String, Object> childUpdates2 = new HashMap<>();
@@ -357,9 +376,7 @@ public class DodajLift extends AppCompatActivity implements View.OnClickListener
         String key=myRef.push().getKey();
         zgrada_obj=new Zgrada(zgrada,user);
         Map<String, Object> childUpdates = new HashMap<>();
-
         childUpdates.put( key, zgrada_obj);
-
         myRef.updateChildren(childUpdates);
         return key;
 
@@ -398,7 +415,7 @@ public class DodajLift extends AppCompatActivity implements View.OnClickListener
 
     }
 
-    private String save_liftove(String zgrada, String lift_naziv, String user){
+    private String save_liftoveZg(String zgrada, String lift_naziv, String user){
         myRef=database.getInstance().getReference("Liftovi");
         String key=myRef.push().getKey();
         Map<String, Object> childUpdates = new HashMap<>();

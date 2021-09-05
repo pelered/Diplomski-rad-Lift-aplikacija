@@ -10,8 +10,6 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.util.Log;
-import android.widget.ArrayAdapter;
-import android.widget.ListView;
 import android.widget.ProgressBar;
 
 import com.example.lift11.Adapter.IspisOldAdapter;
@@ -32,7 +30,7 @@ import static android.view.View.GONE;
 import static android.view.View.VISIBLE;
 
 public class DodajPostojeci extends AppCompatActivity {
-    private DatabaseReference myRef,myRef2,myRef3;
+    private DatabaseReference myRefLift, myRefZg, myRefPodzg;
     private FirebaseDatabase database;
     private SharedPreferences prefs;
     private ArrayList<Lift> lifts;
@@ -41,18 +39,20 @@ public class DodajPostojeci extends AppCompatActivity {
     private LinearLayoutManager layoutManager;
     private CountDownTimer mCountDownTimer;
     private ProgressBar simpleProgressBar;
+    private String id_user;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_dodaj_postojeci);
-        myRef=database.getInstance().getReference("Liftovi");
-        myRef2=database.getInstance().getReference("Projekti/Zgrade");
-        myRef3=database.getInstance().getReference("Projekti/Podzgrade");
+        myRefLift =database.getInstance().getReference("Liftovi");
+        myRefZg =database.getInstance().getReference("Projekti/Zgrade");
+        myRefPodzg =database.getInstance().getReference("Projekti/Podzgrade");
 
 
         prefs = Objects.requireNonNull(this).getSharedPreferences("shared_pref_name", Context.MODE_PRIVATE);
 
+        id_user=prefs.getString("u_uid",null);
         //
         simpleProgressBar=findViewById(R.id.indeterminateBar);
         simpleProgressBar.setVisibility(VISIBLE);
@@ -65,12 +65,15 @@ public class DodajPostojeci extends AppCompatActivity {
         recyclerViewHome.setLayoutManager(layoutManager);
         recyclerViewHome.scrollToPosition(0);
         //
+
         lifts=new ArrayList<>();
         final boolean[] cekaj = {false};
+        Log.d("Userje:",id_user);
 
-        myRef.orderByChild("u_uid").equalTo(prefs.getString("u_uid",null)).addListenerForSingleValueEvent(new ValueEventListener() {
+        myRefLift.orderByChild("u_uid").equalTo(id_user).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull @NotNull DataSnapshot snapshot) {
+                Log.d("Liftovi:",snapshot.toString());
                 for(DataSnapshot recipeSnapshot: snapshot.getChildren()) {
                     if(recipeSnapshot.getValue(Lift.class).getIs_connected()!=null) {
                         if (!recipeSnapshot.getValue(Lift.class).getIs_connected()) {
@@ -101,12 +104,15 @@ public class DodajPostojeci extends AppCompatActivity {
     private void dohvatiZg() {
         for(int i=0;i<lifts.size();i++){
             int finalI = i;
-            myRef2.orderByKey().equalTo(lifts.get(i).getZgrada()).addListenerForSingleValueEvent(new ValueEventListener() {
+            myRefZg.orderByKey().equalTo(lifts.get(i).getZgrada()).addListenerForSingleValueEvent(new ValueEventListener() {
                 @Override
                 public void onDataChange(@NonNull @NotNull DataSnapshot snapshot) {
                     for(DataSnapshot recipe1: snapshot.getChildren()) {
                         String ime_p=recipe1.getValue(Zgrada.class).getIme();
                         lifts.get(finalI).setZg_ime(ime_p);
+                        Log.d("ZgradaIme:",finalI+lifts.toString());
+
+
                     }
                 }
                 @Override
@@ -123,7 +129,7 @@ public class DodajPostojeci extends AppCompatActivity {
         for(int i=0;i<lifts.size();i++){
             if(lifts.get(i).getPod_zg()!=null){
                 int finalI1 = i;
-                myRef3.orderByKey().equalTo(lifts.get(i).getPod_zg()).addListenerForSingleValueEvent(new ValueEventListener() {
+                myRefPodzg.orderByKey().equalTo(lifts.get(i).getPod_zg()).addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
                     public void onDataChange(@NonNull @NotNull DataSnapshot snapshot) {
                         for(DataSnapshot recipe1: snapshot.getChildren()) {
