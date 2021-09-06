@@ -9,12 +9,11 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".DodajPostojeci">
-
-        </activity>
-        <activity android:name=".Odabir" >
-
-        </activity>
+        <activity
+            android:name=".Calibrate"
+            android:exported="true" />
+        <activity android:name=".DodajPostojeci"></activity>
+        <activity android:name=".Odabir"></activity>
         <activity android:name=".Mjerenje" />
         <activity android:name=".Login">
             <intent-filter>

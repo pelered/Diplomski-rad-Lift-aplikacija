@@ -204,7 +204,7 @@ public class DodajLift extends AppCompatActivity implements View.OnClickListener
                             save_zgrade_update(key_zg,naziv_zg.getText().toString(),prefs.getString("u_uid",null),lifts);
                             editor.putString("lift_id",key_lift);
                             editor.apply();
-                            Intent intent = new Intent(this, Mjerenje.class);
+                            Intent intent = new Intent(this, Calibrate.class);
                             startActivity(intent);
                         }else{
                             final boolean[] pr3 = {false};
@@ -226,7 +226,7 @@ public class DodajLift extends AppCompatActivity implements View.OnClickListener
                                     save_zgrade_update(zg.get(i).getKey(),naziv_zg.getText().toString(),prefs.getString("u_uid",null),zg.get(i).getLifts());
                                     editor.putString("lift_id",key_lift);
                                     editor.apply();
-                                    Intent intent = new Intent(this, Mjerenje.class);
+                                    Intent intent = new Intent(this, Calibrate.class);
                                     startActivity(intent);
                                 }else if(i==zg.size()-1 && !pr3[0]){
                                     Log.d("Tu:","2.3");
@@ -240,7 +240,7 @@ public class DodajLift extends AppCompatActivity implements View.OnClickListener
                                     save_zgrade_update(key_zg,naziv_zg.getText().toString(),prefs.getString("u_uid",null),lifts);
                                     editor.putString("lift_id",key_lift);
                                     editor.apply();
-                                    Intent intent = new Intent(this, Mjerenje.class);
+                                    Intent intent = new Intent(this, Calibrate.class);
                                     startActivity(intent);
                                 }
                             }
@@ -308,7 +308,7 @@ public class DodajLift extends AppCompatActivity implements View.OnClickListener
                                         save_zgrade_update(podzg.get(k).getZg_id(),naziv_zg.getText().toString(),prefs.getString("u_uid",null),zg.get(finalI).getPodzg(),zg.get(finalI).getLifts());
                                         editor.putString("lift_id",key_lift);
                                         editor.apply();
-                                        Intent intent = new Intent(this, Mjerenje.class);
+                                        Intent intent = new Intent(this, Calibrate.class);
                                         startActivity(intent);
                                         break;
                                     }
@@ -332,7 +332,7 @@ public class DodajLift extends AppCompatActivity implements View.OnClickListener
                                     save_zgrade_update(zg.get(i).getKey(),naziv_zg.getText().toString(),prefs.getString("u_uid",null),podzg,lifts);
                                     editor.putString("lift_id",key_lift);
                                     editor.apply();
-                                    Intent intent = new Intent(this, Mjerenje.class);
+                                    Intent intent = new Intent(this, Calibrate.class);
                                     startActivity(intent);
                                     break;
                                 }
