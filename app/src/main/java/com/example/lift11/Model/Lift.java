@@ -14,6 +14,9 @@ public class Lift {
     private Boolean is_connected;
     private String zg_ime,pod_ime;
 
+    private float max_ac;
+    private float min_ac;
+
 
 
     public Lift() {
@@ -50,6 +53,34 @@ public class Lift {
         this.n_k = n_k;
         this.v_k = v_k;
         this.is_connected=is_connected;
+    }
+
+    public Lift(String ime, String zgrada, String pod_zg, String u_uid, int n_k, int v_k, Boolean is_connected, int max_ac, int min_ac) {
+        this.ime = ime;
+        this.zgrada = zgrada;
+        this.pod_zg = pod_zg;
+        this.u_uid = u_uid;
+        this.n_k = n_k;
+        this.v_k = v_k;
+        this.is_connected = is_connected;
+        this.max_ac = max_ac;
+        this.min_ac = min_ac;
+    }
+
+    public float getMax_ac() {
+        return max_ac;
+    }
+
+    public void setMax_ac(int max_ac) {
+        this.max_ac = max_ac;
+    }
+
+    public float getMin_ac() {
+        return min_ac;
+    }
+
+    public void setMin_ac(int min_ac) {
+        this.min_ac = min_ac;
     }
 
     public String getZg_ime() {
@@ -144,6 +175,8 @@ public class Lift {
                 ", is_connected=" + is_connected +
                 ", zg_ime='" + zg_ime + '\'' +
                 ", pod_ime='" + pod_ime + '\'' +
+                ", max_ac=" + max_ac +
+                ", min_ac=" + min_ac +
                 '}';
     }
 }
