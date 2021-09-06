@@ -71,7 +71,7 @@ public class Lift {
         return max_ac;
     }
 
-    public void setMax_ac(int max_ac) {
+    public void setMax_ac(float max_ac) {
         this.max_ac = max_ac;
     }
 
@@ -79,7 +79,7 @@ public class Lift {
         return min_ac;
     }
 
-    public void setMin_ac(int min_ac) {
+    public void setMin_ac(float min_ac) {
         this.min_ac = min_ac;
     }
 
