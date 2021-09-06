@@ -1,5 +1,6 @@
 package com.example.lift11;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 
@@ -12,6 +13,17 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.example.lift11.Model.Lift;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.database.annotations.NotNull;
+
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 
 public class Calibrate extends AppCompatActivity {
@@ -37,12 +49,15 @@ public class Calibrate extends AppCompatActivity {
 
     private float sum = 0;
 
+    private FirebaseDatabase database;
+    private DatabaseReference myRef;
+
+    private Lift lift;
     private SharedPreferences prefs;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_calibrate);
         setContentView(R.layout.activity_calibrate);
 
         start = (Button) findViewById(R.id.startButton);
@@ -55,11 +70,30 @@ public class Calibrate extends AppCompatActivity {
         activeAcc = findViewById(R.id.textActiveAcc);
 
         accelerometer = new Accelerometer(this);
+        onPause();
 
+        ///-------------------------------------
         prefs = Objects.requireNonNull(this).getSharedPreferences("shared_pref_name", Context.MODE_PRIVATE);
 
+        myRef= FirebaseDatabase.getInstance().getReference("Liftovi");
 
-        onPause();
+
+        myRef.orderByKey().equalTo("u_uid").addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull @NotNull DataSnapshot snapshot) {
+                for(DataSnapshot recipeSnapshot: snapshot.getChildren()) {
+                    lift = recipeSnapshot.getValue(Lift.class);
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull @NotNull DatabaseError error) {
+
+            }
+        });
+
+
+
 
         accelerometer.setListener(new Accelerometer.Listener() {
             @Override
@@ -69,7 +103,6 @@ public class Calibrate extends AppCompatActivity {
                 }
             }
         });
-
 
         start.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -106,7 +139,7 @@ public class Calibrate extends AppCompatActivity {
                     Toast.makeText(Calibrate.this, "No acceleration information", Toast.LENGTH_SHORT).show();
                 }
 
-
+                izmjereno();
             }
         });
 
@@ -139,6 +172,7 @@ public class Calibrate extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 if (maxAcceleration != 0 && minAcceleration != 0){
+
                     Intent intent = new Intent(Calibrate.this, Mjerenje.class);
                     startActivity(intent);
                 }
@@ -146,6 +180,17 @@ public class Calibrate extends AppCompatActivity {
         });
 
 
+    }
+
+    private void izmjereno() {
+        lift.setMax_ac(maxAcceleration);
+        lift.setMin_ac(minAcceleration);
+    }
+
+    private void spremi(){
+        Map<String, Object> childUpdates = new HashMap<>();
+        childUpdates.put("u_uid", lift);
+        myRef.updateChildren(childUpdates);
     }
 
     private void calibrateAcceleration(float tz) {
