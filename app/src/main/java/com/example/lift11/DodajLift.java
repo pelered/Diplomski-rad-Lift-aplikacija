@@ -207,9 +207,12 @@ public class DodajLift extends AppCompatActivity implements View.OnClickListener
                             Intent intent = new Intent(this, Mjerenje.class);
                             startActivity(intent);
                         }else{
+                            final boolean[] pr3 = {false};
+                            pr3[0]=false;
                             for(int i=0; i<zg.size();i++){
                                 Log.d("Tu:","2.1");
                                 if(naziv_zg.getText().toString().equals(zg.get(i).getIme())){
+                                    pr3[0]=true;
                                     Log.d("Tu:","2.2");
                                     //dodajemo lift u postojecu zgradu
                                     String key_lift;
@@ -225,7 +228,7 @@ public class DodajLift extends AppCompatActivity implements View.OnClickListener
                                     editor.apply();
                                     Intent intent = new Intent(this, Mjerenje.class);
                                     startActivity(intent);
-                                }else if(i==zg.size()-1){
+                                }else if(i==zg.size()-1 && !pr3[0]){
                                     Log.d("Tu:","2.3");
                                     //stvaramo novu zgradu s novim liftom
                                     String key_zg,key_lift;
@@ -273,36 +276,48 @@ public class DodajLift extends AppCompatActivity implements View.OnClickListener
                         }
                     });
                     if(!postoji[0]){
+                        Log.d("Tu:","4");
                         //dodajemo novi lift
                         //provjera da ne bi dodali postojeci lift
                         //ne postoji radimo update bez dohvacanja key-a,samo lift spremamo
+                        final boolean[] pr = {false};
+                        pr[0] =false;
+                        final boolean[] pr2 = {false};
+                        pr2[0] =false;
                         for(int i=0; i<zg.size();i++){
+                            //prolazimo sve postojece zgrade
+                            Log.d("Tu:","4.1");
                             if(naziv_zg.getText().toString().equals(zg.get(i).getIme())){
-                                //dodajemo lift u postojecu zgradu
-                                final boolean[] pr = {false};
+                                //dodajemo lift u postojecu zgradu,udemo samo jednom jer ne smiju bit 2 zg s istime imenom
+                                Log.d("Tu:","4.2");
                                 int finalI = i;
-                                podzg.forEach((el_podzg)->{
-                                    if(naziv_pod.getText().toString().equals(el_podzg.getIme())&& zg.get(finalI).getPodzg().contains(el_podzg.getKey())){
-                                        pr[0] =true;
+                                for(int k=0;k<podzg.size();k++) {
+                                    if (naziv_pod.getText().toString().equals(podzg.get(k).getIme()) && zg.get(finalI).getPodzg().contains(podzg.get(k).getKey())) {
+                                        pr[0] = true;
+                                        pr2[0] =true;
+                                        Log.d("Tu:", "4.4");
                                         //dodajemo lift u postojecu podzgradu
                                         String key_lift;
                                         //spremamo zgradu i dobivamo njezin kljuc ,takoder isto za podzgradu radimo
-                                        key_lift=save_liftove(el_podzg.getZg_id(),el_podzg.getKey(),naziv_lift.getText().toString(),prefs.getString("u_uid",null));
-                                        el_podzg.getLifts().add(key_lift);
+                                        key_lift=save_liftove(podzg.get(k).getZg_id(),podzg.get(k).getKey(),naziv_lift.getText().toString(),prefs.getString("u_uid",null));
+                                        podzg.get(k).getLifts().add(key_lift);
                                         zg.get(finalI).getLifts().add(key_lift);
                                         //azuriramo podzgradu
-                                        save_pod_zgradu_update(el_podzg.getKey(),naziv_pod.getText().toString(),prefs.getString("u_uid",null),el_podzg.getLifts(),el_podzg.getZg_id());
+                                        save_pod_zgradu_update(podzg.get(k).getKey(),naziv_pod.getText().toString(),prefs.getString("u_uid",null),podzg.get(k).getLifts(),podzg.get(k).getZg_id());
                                         //azuriramo zgradu
-                                        save_zgrade_update(el_podzg.getZg_id(),naziv_zg.getText().toString(),prefs.getString("u_uid",null),zg.get(finalI).getPodzg(),zg.get(finalI).getLifts());
+                                        save_zgrade_update(podzg.get(k).getZg_id(),naziv_zg.getText().toString(),prefs.getString("u_uid",null),zg.get(finalI).getPodzg(),zg.get(finalI).getLifts());
                                         editor.putString("lift_id",key_lift);
                                         editor.apply();
                                         Intent intent = new Intent(this, Mjerenje.class);
                                         startActivity(intent);
-
+                                        break;
                                     }
-                                });
+                                }
+
                                 //ako nije nadena podzg s imenom dodajemo novu podzg u postojecu zgradu
                                 if(!pr[0]){
+                                    pr2[0] =true;
+                                    Log.d("Tu:","4.5");
                                     String key_lift,key_podzg;
                                     ArrayList lifts=new ArrayList();
                                     ArrayList podzg=new ArrayList();
@@ -319,9 +334,12 @@ public class DodajLift extends AppCompatActivity implements View.OnClickListener
                                     editor.apply();
                                     Intent intent = new Intent(this, Mjerenje.class);
                                     startActivity(intent);
+                                    break;
                                 }
-                            }else if(i==zg.size()-1){
+                            }else if(i==zg.size()-1 && !pr2[0]){
+                                Log.d("Tu:","4.7");
                                 //stvaramo novu zgradu s novim liftom i novom podzgradom
+                                //provjera da nismo napravili vec
                                 String key_zg,key_lift,key_podzg;
                                 ArrayList lifts=new ArrayList();
                                 ArrayList podzg=new ArrayList();
