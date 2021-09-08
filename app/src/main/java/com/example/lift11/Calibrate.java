@@ -26,7 +26,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
-public class Calibrate extends AppCompatActivity {
+public class Calibrate extends AppCompatActivity{
 
     private Button start;
     private Button save;
@@ -55,6 +55,8 @@ public class Calibrate extends AppCompatActivity {
     private Lift lift;
     private SharedPreferences prefs;
 
+    private String id;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -77,8 +79,11 @@ public class Calibrate extends AppCompatActivity {
 
         myRef= FirebaseDatabase.getInstance().getReference("Liftovi");
 
+        id = prefs.getString("lift_id", "");
 
-        myRef.orderByKey().equalTo("u_uid").addListenerForSingleValueEvent(new ValueEventListener() {
+        Toast.makeText(Calibrate.this, "id" + id, Toast.LENGTH_SHORT).show();
+
+        myRef.orderByKey().equalTo(id).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull @NotNull DataSnapshot snapshot) {
                 for(DataSnapshot recipeSnapshot: snapshot.getChildren()) {
@@ -91,9 +96,6 @@ public class Calibrate extends AppCompatActivity {
 
             }
         });
-
-
-
 
         accelerometer.setListener(new Accelerometer.Listener() {
             @Override
@@ -120,6 +122,7 @@ public class Calibrate extends AppCompatActivity {
             public void onClick(View v) {
                 onAcc = false;
                 activeAcc.setText("Not active");
+                izmjereno();
                 try {
 
                     SharedPreferences.Editor editor = prefs.edit();
@@ -128,18 +131,17 @@ public class Calibrate extends AppCompatActivity {
                         editor.putFloat("MAX_ACC_KEY", maxAcceleration);
                         editor.putFloat("MIN_ACC_KEY", minAcceleration);
                         editor.commit();
-                        Toast.makeText(Calibrate.this, "Acceleration information saved", Toast.LENGTH_SHORT).show();
+                        //Toast.makeText(Calibrate.this, "Acceleration information saved", Toast.LENGTH_SHORT).show();
                     }else{
-                        Toast.makeText(Calibrate.this, "No acceleration information", Toast.LENGTH_SHORT).show();
+                        //Toast.makeText(Calibrate.this, "No acceleration information", Toast.LENGTH_SHORT).show();
                     }
 
                     counter = 10;
                     onPause();
                 }catch (Exception e){
-                    Toast.makeText(Calibrate.this, "No acceleration information", Toast.LENGTH_SHORT).show();
+                    //Toast.makeText(Calibrate.this, "No acceleration information", Toast.LENGTH_SHORT).show();
                 }
 
-                izmjereno();
             }
         });
 
@@ -172,24 +174,23 @@ public class Calibrate extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 if (maxAcceleration != 0 && minAcceleration != 0){
-
+                    spremi();
                     Intent intent = new Intent(Calibrate.this, Mjerenje.class);
                     startActivity(intent);
                 }
             }
         });
-
-
     }
 
     private void izmjereno() {
         lift.setMax_ac(maxAcceleration);
         lift.setMin_ac(minAcceleration);
+        Toast.makeText(Calibrate.this, "information" + lift.getMax_ac(), Toast.LENGTH_SHORT).show();
     }
 
     private void spremi(){
         Map<String, Object> childUpdates = new HashMap<>();
-        childUpdates.put("u_uid", lift);
+        childUpdates.put(id, lift);
         myRef.updateChildren(childUpdates);
     }
 
