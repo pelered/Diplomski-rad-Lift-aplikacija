@@ -1,7 +1,5 @@
 package com.example.lift11;
 
-import android.util.Log;
-
 import java.util.ArrayList;
 
 public class Movement {
@@ -97,16 +95,18 @@ public class Movement {
                 timeLimitUp = timeUp / 2;
                 initializeArrayUp();
                 levels.add(currentFloor);
-                currentFloor += 1;
+                if (currentFloor < nbOfFloors) {
+                    currentFloor += 1;
+                }
                 levels.add(currentFloor);
                 upFirst = false;
             }else {
 
                 for (int i = 0; i < nbOfFloors; i++) {
-
                     if (timeBetweenFloors < (upArray[i] + timeLimitUp) && timeBetweenFloors > (upArray[i] - timeLimitUp)) {
-                        if (currentFloor < nbOfFloors) {
-                            currentFloor = currentFloor + (i + 1);
+                        currentFloor = currentFloor + (i + 1);
+                        if (currentFloor > nbOfFloors) {
+                            currentFloor = nbOfFloors;
                         }
                         levels.add(currentFloor);
                         break;
@@ -121,7 +121,9 @@ public class Movement {
                 timeLimitDown = timeDown / 2;
                 initializeArrayDown();
                 levels.add(currentFloor);
-                currentFloor -= 1;
+                if (currentFloor > 0) {
+                    currentFloor -= 1;
+                }
                 levels.add(currentFloor);
                 downFirst = false;
             }else {
@@ -129,8 +131,9 @@ public class Movement {
                 for (int i = 0; i < nbOfFloors; i++) {
 
                     if (timeBetweenFloors < (downArray[i] + timeLimitDown) && timeBetweenFloors > (downArray[i] - timeLimitDown)) {
-                        if (currentFloor != 0) {
-                            currentFloor = currentFloor - (i + 1);
+                        currentFloor = currentFloor - (i + 1);
+                        if (currentFloor < 0) {
+                            currentFloor = 0;
                         }
                         levels.add(currentFloor);
                         break;
@@ -140,11 +143,23 @@ public class Movement {
         }
     }
 
+    public void reset(){
+        counter = 0;
+        speed = 0;
+        sum = 0;
+        onMove = false;
+        upDown = 0;
+        upDownPrevious = 0;
+        floorChange = false;
+        accValues = new ArrayList<>();
+        sumValues = new ArrayList<>();
+        speedValues = new ArrayList<>();
+    }
+
     private void initializeArrayUp() {
         upArray = new float[nbOfFloors];
         for (int i = 0; i < nbOfFloors; i++){
             upArray[i] = timeUp * (i+1);
-            Log.i("i+ " + nbOfFloors + " " + i, "array+ " + upArray[i]);
         }
     }
 
@@ -152,7 +167,6 @@ public class Movement {
         downArray = new float[nbOfFloors];
         for (int i = 0; i < nbOfFloors; i++){
             downArray[i] = timeDown * (i+1);
-            Log.i("i+ " + nbOfFloors + " " + i, "array+ " + downArray[i]);
         }
     }
 

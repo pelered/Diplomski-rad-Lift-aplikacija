@@ -41,11 +41,9 @@ public class Calibrate extends AppCompatActivity{
 
     private int counter = 0;
 
-    //acceleration
     private float maxAcceleration = 0;
     private float minAcceleration = 0;
     private boolean onAcc = false;
-
 
     private float sum = 0;
 
@@ -74,14 +72,10 @@ public class Calibrate extends AppCompatActivity{
         accelerometer = new Accelerometer(this);
         onPause();
 
-        ///-------------------------------------
+
         prefs = Objects.requireNonNull(this).getSharedPreferences("shared_pref_name", Context.MODE_PRIVATE);
-
         myRef= FirebaseDatabase.getInstance().getReference("Liftovi");
-
         id = prefs.getString("lift_id", "");
-
-        Toast.makeText(Calibrate.this, "id" + id, Toast.LENGTH_SHORT).show();
 
         myRef.orderByKey().equalTo(id).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
@@ -90,7 +84,6 @@ public class Calibrate extends AppCompatActivity{
                     lift = recipeSnapshot.getValue(Lift.class);
                 }
             }
-
             @Override
             public void onCancelled(@NonNull @NotNull DatabaseError error) {
 
@@ -124,24 +117,19 @@ public class Calibrate extends AppCompatActivity{
                 activeAcc.setText("Not active");
                 izmjereno();
                 try {
-
                     SharedPreferences.Editor editor = prefs.edit();
-
                     if (maxAcceleration > 0 && minAcceleration < 0){
                         editor.putFloat("MAX_ACC_KEY", maxAcceleration);
                         editor.putFloat("MIN_ACC_KEY", minAcceleration);
                         editor.commit();
-                        //Toast.makeText(Calibrate.this, "Acceleration information saved", Toast.LENGTH_SHORT).show();
                     }else{
-                        //Toast.makeText(Calibrate.this, "No acceleration information", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(Calibrate.this, "No acceleration information", Toast.LENGTH_SHORT).show();
                     }
-
                     counter = 10;
                     onPause();
                 }catch (Exception e){
-                    //Toast.makeText(Calibrate.this, "No acceleration information", Toast.LENGTH_SHORT).show();
+                   Toast.makeText(Calibrate.this, "No acceleration information", Toast.LENGTH_SHORT).show();
                 }
-
             }
         });
 
@@ -185,7 +173,7 @@ public class Calibrate extends AppCompatActivity{
     private void izmjereno() {
         lift.setMax_ac(maxAcceleration);
         lift.setMin_ac(minAcceleration);
-        Toast.makeText(Calibrate.this, "information" + lift.getMax_ac(), Toast.LENGTH_SHORT).show();
+        Toast.makeText(Calibrate.this, "max" + lift.getMax_ac() + "min" + lift.getMin_ac(), Toast.LENGTH_SHORT).show();
     }
 
     private void spremi(){

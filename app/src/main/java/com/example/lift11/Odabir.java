@@ -16,6 +16,7 @@ public class Odabir extends AppCompatActivity {
         setContentView(R.layout.activity_odabir);
         novi=findViewById(R.id.novi);
         stari=findViewById(R.id.stari);
+        //finder = findViewById(R.id.autonomous_button);
         novi.setOnClickListener(view -> {
             Intent intent = new Intent(this, DodajLift.class);
             startActivity(intent);
@@ -25,5 +26,9 @@ public class Odabir extends AppCompatActivity {
             startActivity(intent);
 
         });
+//        finder.setOnClickListener(view ->{
+            //Intent intent = new Intent(this, );
+            //startActivity(intent);
+  //      });
     }
 }

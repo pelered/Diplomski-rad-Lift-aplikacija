@@ -20,6 +20,7 @@ import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -64,6 +65,7 @@ public class Mjerenje extends AppCompatActivity implements View.OnClickListener,
     };
 
     private TextView zgrada, podzg, lift_naziv, mjeri, trenuti_kat, status_kretanja;
+    private EditText startFloorEditText;
     private Button start_mj, stop_mj, log_out, show_graph;
 
     private Lift lift;
@@ -88,6 +90,7 @@ public class Mjerenje extends AppCompatActivity implements View.OnClickListener,
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         setContentView(R.layout.activity_mjerenje);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         this.registerReceiver(this.mBatInfoReceiver, new IntentFilter(Intent.ACTION_BATTERY_CHANGED));
@@ -108,6 +111,7 @@ public class Mjerenje extends AppCompatActivity implements View.OnClickListener,
         mjeri = findViewById(R.id.stanje_mj);
         trenuti_kat = findViewById(R.id.current_floor);
         status_kretanja = findViewById(R.id.up_down_status);
+        startFloorEditText = findViewById(R.id.startNb);
 
         builder = new AlertDialog.Builder(this);
 
@@ -118,35 +122,33 @@ public class Mjerenje extends AppCompatActivity implements View.OnClickListener,
         accelerometer.setListener(new Accelerometer.Listener() {
             @Override
             public void onTranslation(float tz) {
-                if (tracking){
+                if (tracking) {
                     movement.Prati(tz);
                     updateVariables();
                     podzg.setText(tz + "");
                 }
             }
         });
-        /*
-        if (!vrti) {
-            mjeri.setText("Zaustavljeno mjerenje");
-        }
-*/
+
         state_mjeri_li = new State();
 
         myRefLift = database.getInstance().getReference("Liftovi");
         myRefMjeri = database.getInstance().getReference("Mjeri");
 
         myRefMjeri.child(lift_key);
-        /*
+
         myRefMjeri.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull @NotNull DataSnapshot snapshot) {
                 //Log.d("Mjeri",snapshot.toString());
                 if (snapshot.getValue() == null) {
-                    state_mjeri_li.setU_uid(prefs.getString("u_uid", null)); //zapisuje id lift u state
+                    state_mjeri_li.setU_uid(prefs.getString("u_uid", null));
                     if (vrti) {
                         state_mjeri_li.setState(true);
+                        Toast.makeText(Mjerenje.this, "true"  , Toast.LENGTH_LONG).show();
                     } else {
                         state_mjeri_li.setState(false);
+                        Toast.makeText(Mjerenje.this, "false"  , Toast.LENGTH_LONG).show();
                     }
                     Map<String, Object> up = new HashMap<>();
                     up.put(lift_key, state_mjeri_li);
@@ -160,8 +162,9 @@ public class Mjerenje extends AppCompatActivity implements View.OnClickListener,
             public void onCancelled(@NonNull @NotNull DatabaseError error) {
 
             }
-        });*/
-        /*
+        });
+
+
         myRefMjeri.child(lift_key).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull @NotNull DataSnapshot snapshot) {
@@ -174,6 +177,7 @@ public class Mjerenje extends AppCompatActivity implements View.OnClickListener,
                         up.put(lift_key, state_mjeri_li);
                         myRefMjeri.updateChildren(up);
                         mjeri.setText("Zaustavljeno mjerenje");
+                        endTracking();
                     } else if (Objects.requireNonNull(snapshot.getValue(State.class)).getState()) {
                         vrti = true;
                         mjeri.setText("Mjeri");
@@ -181,31 +185,28 @@ public class Mjerenje extends AppCompatActivity implements View.OnClickListener,
                         Map<String, Object> up = new HashMap<>();
                         up.put(lift_key, state_mjeri_li);
                         myRefMjeri.updateChildren(up);
+                        startTracking();
                     }
                 }
-
             }
-
             @Override
             public void onCancelled(@NonNull @NotNull DatabaseError error) {
 
             }
         });
-*/
+
         myRefLift.child(lift_key).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull @NotNull DataSnapshot snapshot) {
                 lift = snapshot.getValue(Lift.class);
                 lift.setKey(snapshot.getKey());
                 lift_naziv.setText(lift.getIme());
+                zgrada.setText(lift.getZg_ime());
                 n_k = lift.getN_k();
                 v_k = lift.getV_k();
                 maxAcc = lift.getMax_ac();
                 minAcc = lift.getMin_ac();
-                p_k = n_k;
-                currentFloor = p_k;
             }
-
             @Override
             public void onCancelled(@NonNull @NotNull DatabaseError error) {
 
@@ -217,26 +218,10 @@ public class Mjerenje extends AppCompatActivity implements View.OnClickListener,
     @Override
     public void onClick(View view) {
         if (view.equals(start_mj)) {
-            setMovementVariables();
-            tracking = true;
-            vrti = true;
-            mjeri.setText("Mjeri");
-            state_mjeri_li.setState(true);
-            Map<String, Object> up = new HashMap<>();
-            up.put(lift_key, state_mjeri_li);
-            myRefMjeri.updateChildren(up);
-            startTime = Calendar.getInstance().getTime().toString();
+            startTracking();
 
         } else if (view.equals(stop_mj)) {
-            tracking = false;
-            vrti = false;
-            state_mjeri_li.setState(false);
-            Map<String, Object> up = new HashMap<>();
-            up.put(lift_key, state_mjeri_li);
-            myRefMjeri.updateChildren(up);
-            mjeri.setText("Zaustavljeno mjerenje");
-            endTime = Calendar.getInstance().getTime().toString();
-            save_data_travels();
+            endTracking();
 
         } else if (view.equals(log_out)) {
             //ovdje
@@ -301,10 +286,59 @@ public class Mjerenje extends AppCompatActivity implements View.OnClickListener,
         }
     }
 
+    private void endTracking() {
+        startFloorEditText.setText(currentFloor + "");
+
+        tracking = false;
+        vrti = false;
+        state_mjeri_li.setState(false);
+        Map<String, Object> up = new HashMap<>();
+        up.put(lift_key, state_mjeri_li);
+
+        myRefMjeri.updateChildren(up);
+        mjeri.setText("Zaustavljeno mjerenje");
+        endTime = Calendar.getInstance().getTime().toString();
+        save_data_travels();
+        resetAll();
+    }
+
+    private void startTracking() {
+        if (setFirstFloor()) {
+            setMovementVariables();
+            tracking = true;
+            vrti = true;
+            mjeri.setText("Mjeri");
+            state_mjeri_li.setState(true);
+            Map<String, Object> up = new HashMap<>();
+            up.put(lift_key, state_mjeri_li);
+            myRefMjeri.updateChildren(up);
+            startTime = Calendar.getInstance().getTime().toString();
+        } else {
+            return;
+
+        }
+    }
+
+    private void resetAll() {
+        movement.reset();
+    }
+
+    private boolean setFirstFloor() {
+        String k = startFloorEditText.getText().toString();
+        p_k = Integer.parseInt(k);
+        if (p_k >= n_k && p_k <= v_k) {
+            currentFloor = p_k;
+            return true;
+        } else {
+            Toast.makeText(Mjerenje.this, "Početni broj nije točan", Toast.LENGTH_SHORT).show();
+            return false;
+        }
+    }
+
     private void updateVariables() {
         setStatus();
         trenuti_kat.setText(movement.getCurrentFloor() + "");
-        if (previousFloor != movement.getCurrentFloor()){
+        if (previousFloor != movement.getCurrentFloor()) {
             myRef2 = database.getInstance().getReference("Stanje");
             lift_state = new Lift_state(Integer.toString(movement.getCurrentFloor()), Integer.toString(0), String.valueOf(batteryPct) + "%", "u pokretu");
             Map<String, Object> childUpdates = new HashMap<>();
@@ -316,12 +350,21 @@ public class Mjerenje extends AppCompatActivity implements View.OnClickListener,
     }
 
     private void save_data_travels() {
+
         myRefVoznja = database.getInstance().getReference("Putovanja");
-        liftTravels = new Lift_travels(p_k, currentFloor,n_k,v_k,startTime,endTime,0,"","",lift_key);
+        liftTravels = new Lift_travels(p_k, currentFloor, n_k, v_k, startTime, endTime, 0, "", "", lift_key);
         String key = myRefVoznja.push().getKey();
         Map<String, Object> childUpdates = new HashMap<>();
         childUpdates.put(key, liftTravels);
         myRefVoznja.updateChildren(childUpdates);
+
+        myRef2 = database.getInstance().getReference("Stanje");
+        lift_state = new Lift_state(Integer.toString(movement.getCurrentFloor()), Integer.toString(0), String.valueOf(batteryPct) + "%", "nije u pokretu");
+        Map<String, Object> childUpdates1 = new HashMap<>();
+        childUpdates1.put(lift.getKey(), lift_state);
+        myRef2.updateChildren(childUpdates1);
+        currentFloor = movement.getCurrentFloor();
+
     }
 
     private void setMovementVariables() {
@@ -332,7 +375,7 @@ public class Mjerenje extends AppCompatActivity implements View.OnClickListener,
     }
 
     private void setStatus() {
-        switch (movement.getUpDown()){
+        switch (movement.getUpDown()) {
             case 0:
                 status_kretanja.setText("Stationary");
                 break;
@@ -351,7 +394,6 @@ public class Mjerenje extends AppCompatActivity implements View.OnClickListener,
     @Override
     public void onPointerCaptureChanged(boolean hasCapture) {
         Log.d("Pointer:", String.valueOf(hasCapture));
-
     }
 
     @Override

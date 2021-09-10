@@ -41,6 +41,9 @@ public class Login extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
+
+        FirebaseDatabase.getInstance().setPersistenceEnabled(true);
+
         prefs = Objects.requireNonNull(this).getSharedPreferences("shared_pref_name", Context.MODE_PRIVATE);
         builder = new AlertDialog.Builder(this);
         if(prefs.getString("email",null)!=null){
