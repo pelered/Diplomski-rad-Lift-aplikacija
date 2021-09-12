@@ -145,10 +145,10 @@ public class Mjerenje extends AppCompatActivity implements View.OnClickListener,
                     state_mjeri_li.setU_uid(prefs.getString("u_uid", null));
                     if (vrti) {
                         state_mjeri_li.setState(true);
-                        Toast.makeText(Mjerenje.this, "true"  , Toast.LENGTH_LONG).show();
+                        Toast.makeText(Mjerenje.this, "true", Toast.LENGTH_LONG).show();
                     } else {
                         state_mjeri_li.setState(false);
-                        Toast.makeText(Mjerenje.this, "false"  , Toast.LENGTH_LONG).show();
+                        Toast.makeText(Mjerenje.this, "false", Toast.LENGTH_LONG).show();
                     }
                     Map<String, Object> up = new HashMap<>();
                     up.put(lift_key, state_mjeri_li);
@@ -189,6 +189,7 @@ public class Mjerenje extends AppCompatActivity implements View.OnClickListener,
                     }
                 }
             }
+
             @Override
             public void onCancelled(@NonNull @NotNull DatabaseError error) {
 
@@ -207,6 +208,7 @@ public class Mjerenje extends AppCompatActivity implements View.OnClickListener,
                 maxAcc = lift.getMax_ac();
                 minAcc = lift.getMin_ac();
             }
+
             @Override
             public void onCancelled(@NonNull @NotNull DatabaseError error) {
 
@@ -326,6 +328,9 @@ public class Mjerenje extends AppCompatActivity implements View.OnClickListener,
     private boolean setFirstFloor() {
         String k = startFloorEditText.getText().toString();
         p_k = Integer.parseInt(k);
+        if(k.matches("")){
+            p_k = n_k;
+        }
         if (p_k >= n_k && p_k <= v_k) {
             currentFloor = p_k;
             return true;
@@ -409,103 +414,4 @@ public class Mjerenje extends AppCompatActivity implements View.OnClickListener,
 
         accelerometer.unregister();
     }
-
-    /*
-        @OnLifecycleEvent(Lifecycle.Event.ON_RESUME)
-        public void onResume() {
-            super.onResume();
-            prefs = getSharedPreferences("shared_pref_name", Context.MODE_PRIVATE);
-
-            myRefMjeri.child(lift_key).addListenerForSingleValueEvent(new ValueEventListener() {
-                @Override
-                public void onDataChange(@NonNull @NotNull DataSnapshot snapshot) {
-                    Log.d("Mjeri", snapshot.toString());
-                    if (snapshot.getValue() == null) {
-                        state_mjeri_li.setU_uid(prefs.getString("u_uid", null));
-                        if (vrti) {
-                            state_mjeri_li.setState(true);
-                        } else {
-                            state_mjeri_li.setState(false);
-                        }
-                    } else {
-                        state_mjeri_li = snapshot.getValue(State.class);
-                    }
-                }
-
-                @Override
-                public void onCancelled(@NonNull @NotNull DatabaseError error) {
-
-                }
-            });
-
-
-            myRefLift.child(lift_key).addListenerForSingleValueEvent(new ValueEventListener() {
-                @Override
-                public void onDataChange(@NonNull @NotNull DataSnapshot snapshot) {
-                    lift = snapshot.getValue(Lift.class);
-                    lift.setKey(snapshot.getKey());
-                    lift_naziv.setText(lift.getIme());
-                    n_k = lift.getN_k();
-                    v_k = lift.getV_k();
-                    maxAcc = lift.getMax_ac();
-                    minAcc = lift.getMin_ac();
-                    p_k = n_k;
-                }
-
-                @Override
-                public void onCancelled(@NonNull @NotNull DatabaseError error) {
-
-                }
-            });
-        }
-    */
-    /*
-        private void start_timer() {
-
-            int count_p = getRandomNumber(1, 6);
-            myRef2 = database.getInstance().getReference("Stanje");
-            String start_time = Calendar.getInstance().getTime().toString();
-            final int[] p_k_t = {p_k};
-
-            mCountDownTimer = new CountDownTimer((z_k - p_k) * 1000, 1000) {
-                @Override
-                public void onTick(long l) {
-
-                    Log.d("Tik:", String.valueOf(p_k_t[0]) + ", " + String.valueOf(l) + "," + String.valueOf(z_k));
-                    lift_state = new Lift_state(Integer.toString(p_k_t[0]), Integer.toString(count_p), String.valueOf(batteryPct) + "%", "u pokretu");
-                    p_k_t[0] = p_k_t[0] + 1;
-                    Map<String, Object> childUpdates = new HashMap<>();
-                    childUpdates.put(lift.getKey(), lift_state);
-                    myRef2.updateChildren(childUpdates);
-                    //ujedno salje info na webstranicu ako gledas taj liftTravels
-
-                }
-
-                @Override
-                public void onFinish() {
-                    String end_time = Calendar.getInstance().getTime().toString();
-                    liftTravels = new Lift_travels(p_k, z_k, n_k, v_k, start_time, end_time, count_p, lift.getZgrada(), lift.getPod_zg(), lift.getKey());
-                    //System.out.println("TEST: "+liftTravels.toString());
-
-                    lift_state = new Lift_state(Integer.toString(z_k), Integer.toString(count_p), String.valueOf(batteryPct) + "%", "miruje");
-                    Map<String, Object> childUpdates = new HashMap<>();
-                    childUpdates.put(lift.getKey(), lift_state);
-                    //System.out.println("TEST6 : "+childUpdates.toString());
-                    myRef2.updateChildren(childUpdates);
-                    save_data_travels();
-                    if (vrti) {
-                        postavi_vrijednosti();
-                    }
-                    //pokreni ponovo ako nije pritisnut stop gumb
-
-                }
-            }.start();
-
-
-        }
-
-    private void postavi_vrijednosti() {
-
-        //start_timer();
-    }*/
 }

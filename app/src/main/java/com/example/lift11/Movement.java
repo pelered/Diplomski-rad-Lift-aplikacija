@@ -8,11 +8,10 @@ public class Movement {
     private int currentFloor;
 
     private boolean onMove = false;
-    private int upDown = 0; // up = 1, down = 2, stationary = 0
+    private int upDown = 0;
     private int upDownPrevious = 0;
     private boolean floorChange = false;
 
-    private long startTime;
     private long floorStartTime;
     private long timeBetweenFloors;
     private float timeLimitUp;
@@ -40,8 +39,6 @@ public class Movement {
     private float[] upArray;
     private float[] downArray;
 
-    private boolean switchModeTime = false;
-
     public void Prati(float z){
         if (counter < 10){
             z = 0;
@@ -58,7 +55,6 @@ public class Movement {
         }
 
          if (onMove == false && upDown == 0){
-            //trip started +
             if (sum > averMaxAmp ){
                 onMove = true;
                 upDown = 1;
@@ -86,7 +82,6 @@ public class Movement {
             }
         }
 
-
         if (floorChange == true && upDownPrevious == 1){
             floorChange = false;
 
@@ -101,7 +96,6 @@ public class Movement {
                 levels.add(currentFloor);
                 upFirst = false;
             }else {
-
                 for (int i = 0; i < nbOfFloors; i++) {
                     if (timeBetweenFloors < (upArray[i] + timeLimitUp) && timeBetweenFloors > (upArray[i] - timeLimitUp)) {
                         currentFloor = currentFloor + (i + 1);
@@ -183,11 +177,4 @@ public class Movement {
 
     public int getCurrentFloor() { return currentFloor; }
 
-    public long getOverallTime() { return System.currentTimeMillis() - startTime; }
-
-    public void setZeroSec() { this.startTime = System.currentTimeMillis(); }
-
-    public ArrayList<Float> getSpeedValues() { return speedValues; }
-    public ArrayList<Float> getAccValues() {return accValues;}
-    public ArrayList<Float> getSumValues () {return sumValues;}
 }

@@ -26,7 +26,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
-public class Calibrate extends AppCompatActivity{
+public class Calibrate extends AppCompatActivity {
 
     private Button start;
     private Button save;
@@ -74,16 +74,17 @@ public class Calibrate extends AppCompatActivity{
 
 
         prefs = Objects.requireNonNull(this).getSharedPreferences("shared_pref_name", Context.MODE_PRIVATE);
-        myRef= FirebaseDatabase.getInstance().getReference("Liftovi");
+        myRef = FirebaseDatabase.getInstance().getReference("Liftovi");
         id = prefs.getString("lift_id", "");
 
         myRef.orderByKey().equalTo(id).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull @NotNull DataSnapshot snapshot) {
-                for(DataSnapshot recipeSnapshot: snapshot.getChildren()) {
+                for (DataSnapshot recipeSnapshot : snapshot.getChildren()) {
                     lift = recipeSnapshot.getValue(Lift.class);
                 }
             }
+
             @Override
             public void onCancelled(@NonNull @NotNull DatabaseError error) {
 
@@ -118,17 +119,17 @@ public class Calibrate extends AppCompatActivity{
                 izmjereno();
                 try {
                     SharedPreferences.Editor editor = prefs.edit();
-                    if (maxAcceleration > 0 && minAcceleration < 0){
+                    if (maxAcceleration > 0 && minAcceleration < 0) {
                         editor.putFloat("MAX_ACC_KEY", maxAcceleration);
                         editor.putFloat("MIN_ACC_KEY", minAcceleration);
                         editor.commit();
-                    }else{
+                    } else {
                         Toast.makeText(Calibrate.this, "No acceleration information", Toast.LENGTH_SHORT).show();
                     }
                     counter = 10;
                     onPause();
-                }catch (Exception e){
-                   Toast.makeText(Calibrate.this, "No acceleration information", Toast.LENGTH_SHORT).show();
+                } catch (Exception e) {
+                    Toast.makeText(Calibrate.this, "No acceleration information", Toast.LENGTH_SHORT).show();
                 }
             }
         });
@@ -147,12 +148,12 @@ public class Calibrate extends AppCompatActivity{
                     editor.commit();
                     Toast.makeText(Calibrate.this, "Acceleration data reset", Toast.LENGTH_SHORT).show();
 
-                    maxAccText.setText(0+"");
-                    minAccText.setText(0+"");
+                    maxAccText.setText(0 + "");
+                    minAccText.setText(0 + "");
                     maxAcceleration = 0;
                     minAcceleration = 0;
 
-                }catch (Exception e){
+                } catch (Exception e) {
                     Toast.makeText(Calibrate.this, "Error", Toast.LENGTH_SHORT).show();
                 }
             }
@@ -161,7 +162,7 @@ public class Calibrate extends AppCompatActivity{
         startTracker.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (maxAcceleration != 0 && minAcceleration != 0){
+                if (maxAcceleration != 0 && minAcceleration != 0) {
                     spremi();
                     Intent intent = new Intent(Calibrate.this, Mjerenje.class);
                     startActivity(intent);
@@ -176,7 +177,7 @@ public class Calibrate extends AppCompatActivity{
         Toast.makeText(Calibrate.this, "max" + lift.getMax_ac() + "min" + lift.getMin_ac(), Toast.LENGTH_SHORT).show();
     }
 
-    private void spremi(){
+    private void spremi() {
         Map<String, Object> childUpdates = new HashMap<>();
         childUpdates.put(id, lift);
         myRef.updateChildren(childUpdates);
@@ -187,11 +188,11 @@ public class Calibrate extends AppCompatActivity{
             sum += tz;
             if (maxAcceleration < sum) {
                 maxAcceleration = sum;
-                maxAccText.setText(sum+"");
+                maxAccText.setText(sum + "");
             }
             if (minAcceleration > sum) {
                 minAcceleration = sum;
-                minAccText.setText(sum+"");
+                minAccText.setText(sum + "");
             }
         } else {
             counter--;

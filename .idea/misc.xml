@@ -5,8 +5,13 @@
       <map>
         <entry key="../../../../layout/custom_preview.xml" value="0.1" />
         <entry key="app/src/main/res/layout/activity_calibrate.xml" value="0.33" />
+        <entry key="app/src/main/res/layout/activity_dodaj_lift.xml" value="0.3541666666666667" />
+        <entry key="app/src/main/res/layout/activity_dodaj_postojeci.xml" value="0.3541666666666667" />
+        <entry key="app/src/main/res/layout/activity_login.xml" value="0.3541666666666667" />
         <entry key="app/src/main/res/layout/activity_main.xml" value="0.3692708333333333" />
         <entry key="app/src/main/res/layout/activity_mjerenje.xml" value="0.32153846153846155" />
+        <entry key="app/src/main/res/layout/activity_odabir.xml" value="0.3541666666666667" />
+        <entry key="app/src/main/res/layout/listview_old.xml" value="0.3541666666666667" />
       </map>
     </option>
   </component>

@@ -8,13 +8,13 @@ import android.hardware.SensorManager;
 
 public class Accelerometer {
 
-    public interface Listener{
+    public interface Listener {
         void onTranslation(float tz);
     }
 
     private Listener listener;
 
-    public void setListener(Listener l){
+    public void setListener(Listener l) {
         listener = l;
     }
 
@@ -26,7 +26,7 @@ public class Accelerometer {
     private float linear_acceleration[] = new float[3];
     private float alpha = 0.3f;
 
-    Accelerometer(Context context){
+    Accelerometer(Context context) {
         sensorManager = (SensorManager) context.getSystemService(Context.SENSOR_SERVICE);
         sensor = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
         sensorEventListener = new SensorEventListener() {
@@ -41,11 +41,10 @@ public class Accelerometer {
                 linear_acceleration[1] = event.values[1] - gravity[1];
                 linear_acceleration[2] = event.values[2] - gravity[2];
 
-                if (listener != null){
+                if (listener != null) {
                     listener.onTranslation(linear_acceleration[2]);
                 }
             }
-
             @Override
             public void onAccuracyChanged(Sensor sensor, int accuracy) {
 
@@ -54,11 +53,11 @@ public class Accelerometer {
 
     }
 
-    public void register(){
+    public void register() {
         sensorManager.registerListener(sensorEventListener, sensor, SensorManager.SENSOR_DELAY_NORMAL);
     }
 
-    public void unregister(){
+    public void unregister() {
         sensorManager.unregisterListener(sensorEventListener);
     }
 
