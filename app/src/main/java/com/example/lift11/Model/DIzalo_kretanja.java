@@ -3,7 +3,7 @@ package com.example.lift11.Model;
 import java.util.HashMap;
 import java.util.Map;
 
-public class Lift_travels {
+public class DIzalo_kretanja {
 
     private int p_k;//pocetni kat
     private int z_k;//zavrsni kat
@@ -21,7 +21,7 @@ public class Lift_travels {
     private String id_lift;
 
 
-    public Lift_travels(int p_k, int z_k, int n_k, int v_k, String start_time, String end_time, int count_p, String odb_zgrada, String odb_pod_zgrada, String id_lift) {
+    public DIzalo_kretanja(int p_k, int z_k, int n_k, int v_k, String start_time, String end_time, int count_p, String odb_zgrada, String odb_pod_zgrada, String id_lift) {
         this.p_k = p_k;
         this.z_k = z_k;
         this.n_k = n_k;
@@ -34,7 +34,7 @@ public class Lift_travels {
         this.id_lift = id_lift;
     }
 
-    public Lift_travels(int p_k, int z_k, int n_k, int v_k, String start_time, String end_time, int count_p, String odb_zgrada, String odb_pod_zgrada) {
+    public DIzalo_kretanja(int p_k, int z_k, int n_k, int v_k, String start_time, String end_time, int count_p, String odb_zgrada, String odb_pod_zgrada) {
         this.p_k = p_k;
         this.z_k = z_k;
         this.n_k = n_k;
@@ -128,7 +128,7 @@ public class Lift_travels {
 
     @Override
     public String toString() {
-        return "Lift_travels{" +
+        return "DIzalo_kretanja{" +
                 "p_k=" + p_k +
                 ", z_k=" + z_k +
                 ", n_k=" + n_k +

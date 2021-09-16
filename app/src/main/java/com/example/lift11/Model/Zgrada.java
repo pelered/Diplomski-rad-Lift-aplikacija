@@ -7,6 +7,7 @@ public class Zgrada {
     private String u_uid;
     private ArrayList<String> lifts;
     private ArrayList<String> podzg;
+    private String key;
 
     private String zg_id;
 
@@ -35,7 +36,7 @@ public class Zgrada {
     }
 
 
-    public Zgrada(String u_uid,String ime,  ArrayList<String> lifts) {
+    public Zgrada(String ime,String u_uid,  ArrayList<String> lifts) {
         this.ime = ime;
         this.u_uid = u_uid;
         this.lifts = lifts;
@@ -49,7 +50,7 @@ public class Zgrada {
         //this.zg_id=zg_id;
 
     }*/
-    public Zgrada(String u_uid,String ime,  ArrayList<String> lifts,String zg_id) {
+    public Zgrada(String ime, String u_uid, ArrayList<String> lifts,String zg_id) {
         this.ime = ime;
         this.u_uid = u_uid;
         this.lifts = lifts;
@@ -57,7 +58,13 @@ public class Zgrada {
 
     }
 
+    public String getKey() {
+        return key;
+    }
 
+    public void setKey(String key) {
+        this.key = key;
+    }
 
     public String getIme() {
         return ime;
@@ -106,6 +113,7 @@ public class Zgrada {
                 ", u_uid='" + u_uid + '\'' +
                 ", lifts=" + lifts +
                 ", podzg=" + podzg +
+                ", key='" + key + '\'' +
                 ", zg_id='" + zg_id + '\'' +
                 '}';
     }
