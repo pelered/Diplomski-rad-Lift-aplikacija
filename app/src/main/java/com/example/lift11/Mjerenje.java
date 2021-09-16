@@ -3,9 +3,7 @@ package com.example.lift11;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.lifecycle.Lifecycle;
 import androidx.lifecycle.LifecycleObserver;
-import androidx.lifecycle.OnLifecycleEvent;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -23,10 +21,10 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.example.lift11.Model.Lift;
-import com.example.lift11.Model.Lift_state;
-import com.example.lift11.Model.Lift_travels;
-import com.example.lift11.Model.State;
+import com.example.lift11.Model.DIzalo_kretanja;
+import com.example.lift11.Model.Dizalo;
+import com.example.lift11.Model.Dizalo_stanje;
+import com.example.lift11.Model.Stanje;
 import com.firebase.ui.auth.AuthUI;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -47,9 +45,9 @@ public class Mjerenje extends AppCompatActivity implements View.OnClickListener,
     private boolean vrti;
     private SharedPreferences prefs;
     private Button start_mj,stop_mj,log_out;
-    private Lift lift;
-    private Lift_travels liftTravels;
-    private Lift_state lift_state;
+    private Dizalo dizalo;
+    private DIzalo_kretanja liftTravels;
+    private Dizalo_stanje dizalo_stanje;
     private CountDownTimer mCountDownTimer;
     private String lift_key;
     private int p_k;//pocetni kat
@@ -57,7 +55,7 @@ public class Mjerenje extends AppCompatActivity implements View.OnClickListener,
     private int n_k;//najnizi kat
     private int v_k;//najvisi kat
     float batteryPct;
-    private State state_mjeri_li;
+    private Stanje stanje_mjeri_li;
     private AlertDialog.Builder builder;
     private String id_user;
     private TextView zgrada,podzg,lift_naziv,mjeri;
@@ -95,25 +93,45 @@ public class Mjerenje extends AppCompatActivity implements View.OnClickListener,
             mjeri.setText("Zaustavljeno mjerenje");
         }
 
-        state_mjeri_li =new State();
+        stanje_mjeri_li =new Stanje();
         myRefLift =database.getInstance().getReference("Liftovi");
         myRefMjeri =database.getInstance().getReference("Mjeri");
+        myRefLift.child(lift_key).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull @NotNull DataSnapshot snapshot) {
+
+                dizalo =snapshot.getValue(Dizalo.class);
+                dizalo.setKey(snapshot.getKey());
+                lift_naziv.setText(dizalo.getIme());
+                n_k= dizalo.getN_k();
+                v_k= dizalo.getV_k();
+            }
+
+            @Override
+            public void onCancelled(@NonNull @NotNull DatabaseError error) {
+
+            }
+        });
         myRefMjeri.child(lift_key).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull @NotNull DataSnapshot snapshot) {
-                //Log.d("Mjeri",snapshot.toString());
                 if(snapshot.getValue()==null){
-                    state_mjeri_li.setU_uid(prefs.getString("u_uid", null));
+
+                    stanje_mjeri_li.setU_uid(prefs.getString("u_uid", null));
                     if(vrti){
-                        state_mjeri_li.setState(true);
+                        stanje_mjeri_li.setState(true);
                     }else{
-                        state_mjeri_li.setState(false);
+                        stanje_mjeri_li.setState(false);
                     }
                     Map<String, Object> up = new HashMap<>();
-                    up.put(lift_key, state_mjeri_li);
+                    up.put(lift_key, stanje_mjeri_li);
+
                     myRefMjeri.updateChildren(up);
                 }else{
-                        state_mjeri_li =snapshot.getValue(State.class);
+
+
+
+                    stanje_mjeri_li =snapshot.getValue(Stanje.class);
                 }
             }
             @Override
@@ -124,22 +142,22 @@ public class Mjerenje extends AppCompatActivity implements View.OnClickListener,
         myRefMjeri.child(lift_key).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull @NotNull DataSnapshot snapshot) {
-                //Log.d("Data", String.valueOf(snapshot));
                 if(snapshot.getValue()!=null){
-                    if(!Objects.requireNonNull(snapshot.getValue(State.class)).getState()){
+                    if(!Objects.requireNonNull(snapshot.getValue(Stanje.class)).getState()){
                         vrti=false;
-                        state_mjeri_li.setState(false);
+                        stanje_mjeri_li.setState(false);
                         Map<String, Object> up = new HashMap<>();
-                        up.put(lift_key, state_mjeri_li);
+                        up.put(lift_key, stanje_mjeri_li);
                         myRefMjeri.updateChildren(up);
                         mjeri.setText("Zaustavljeno mjerenje");
-                    }else if(Objects.requireNonNull(snapshot.getValue(State.class)).getState()){
+                    }else if(Objects.requireNonNull(snapshot.getValue(Stanje.class)).getState()){
                         vrti=true;
                         mjeri.setText("Mjeri");
-                        state_mjeri_li.setState(true);
+                        stanje_mjeri_li.setState(true);
                         Map<String, Object> up = new HashMap<>();
-                        up.put(lift_key, state_mjeri_li);
+                        up.put(lift_key, stanje_mjeri_li);
                         myRefMjeri.updateChildren(up);
+
                         postavi_vrijednosti();
                     }
                 }
@@ -152,21 +170,7 @@ public class Mjerenje extends AppCompatActivity implements View.OnClickListener,
             }
         });
 
-        myRefLift.child(lift_key).addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull @NotNull DataSnapshot snapshot) {
-                lift=snapshot.getValue(Lift.class);
-                lift.setKey(snapshot.getKey());
-                lift_naziv.setText(lift.getIme());
-                n_k=lift.getN_k();
-                v_k=lift.getV_k();
-            }
 
-            @Override
-            public void onCancelled(@NonNull @NotNull DatabaseError error) {
-
-            }
-        });
     }
 
     @Override
@@ -174,9 +178,9 @@ public class Mjerenje extends AppCompatActivity implements View.OnClickListener,
         if(view.equals(start_mj)){
             vrti=true;
             mjeri.setText("Mjeri");
-            state_mjeri_li.setState(true);
+            stanje_mjeri_li.setState(true);
             Map<String, Object> up = new HashMap<>();
-            up.put(lift_key, state_mjeri_li);
+            up.put(lift_key, stanje_mjeri_li);
             myRefMjeri.updateChildren(up);
 
             postavi_vrijednosti();
@@ -184,10 +188,9 @@ public class Mjerenje extends AppCompatActivity implements View.OnClickListener,
         }
         else if(view.equals(stop_mj)){
             vrti=false;
-            mjeri.setText("Mjeri");
-            state_mjeri_li.setState(false);
+            stanje_mjeri_li.setState(false);
             Map<String, Object> up = new HashMap<>();
-            up.put(lift_key, state_mjeri_li);
+            up.put(lift_key, stanje_mjeri_li);
             myRefMjeri.updateChildren(up);
             mjeri.setText("Zaustavljeno mjerenje");
 
@@ -205,13 +208,12 @@ public class Mjerenje extends AppCompatActivity implements View.OnClickListener,
                                         .signOut(getApplicationContext())
                                         .addOnCompleteListener(task -> {
                                             vrti=false;
-                                            state_mjeri_li.setState(false);
+                                            stanje_mjeri_li.setState(false);
                                             Map<String, Object> up = new HashMap<>();
-                                            up.put(lift_key, state_mjeri_li);
+                                            up.put(lift_key, stanje_mjeri_li);
                                             myRefMjeri.updateChildren(up);
-                                            Log.d("Key",lift_key);
-                                            Log.d("State",state_mjeri_li.toString());
-                                            lift.setIs_connected(false);
+
+                                            dizalo.setIs_connected(false);
 
                                             Map<String, Object> update1 = new HashMap<>();
                                             update1.put("is_connected", false);
@@ -220,17 +222,17 @@ public class Mjerenje extends AppCompatActivity implements View.OnClickListener,
                                             SharedPreferences.Editor editor = prefs.edit();
                                             editor.clear();
                                             editor.apply();
-                                            Log.d("Lift2:",lift.toString());
-                                            //todo ne stavi false svaki put pri odjavi
-                                            Log.d("Lift2.2:",myRefLift.toString());
+
 
 
                                             myRefLift.child(lift_key).updateChildren(update1).addOnCompleteListener(task1 -> {
 
-                                                if (task.isSuccessful()) {Log.d("Uspjeh","d");
-                                                    startActivity(new Intent(Mjerenje.this, Login.class));
+                                                if (task.isSuccessful()) {
+                                                    startActivity(new Intent(Mjerenje.this, Prijava.class));
                                                     finish();}
-                                                if(task.isCanceled()){Log.d("Neuspjeh",task.getResult().toString());}
+                                                if(task.isCanceled()){
+                                                    Log.d("Neuspjeh",task.getResult().toString());
+                                                }
 
                                             });
 
@@ -265,11 +267,10 @@ public class Mjerenje extends AppCompatActivity implements View.OnClickListener,
             @Override
             public void onTick(long l) {
 
-                Log.d("Tik:", String.valueOf(p_k_t[0])+", "+String.valueOf(l)+","+String.valueOf(z_k));
-                lift_state=new Lift_state(Integer.toString(p_k_t[0]),Integer.toString(count_p),String.valueOf(batteryPct) + "%","u pokretu");
+                dizalo_stanje =new Dizalo_stanje(Integer.toString(p_k_t[0]),Integer.toString(count_p),String.valueOf(batteryPct) + "%","u pokretu");
                 p_k_t[0] = p_k_t[0] +1;
                 Map<String, Object> childUpdates = new HashMap<>();
-                childUpdates.put( lift.getKey(), lift_state);
+                childUpdates.put( dizalo.getKey(), dizalo_stanje);
                 myRef2.updateChildren(childUpdates);
                 //ujedno salje info na webstranicu ako gledas taj liftTravels
 
@@ -277,12 +278,12 @@ public class Mjerenje extends AppCompatActivity implements View.OnClickListener,
             @Override
             public void onFinish() {
                 String end_time = Calendar.getInstance().getTime().toString();
-                liftTravels =new Lift_travels(p_k,z_k,n_k,v_k,start_time,end_time,count_p,lift.getZgrada(),lift.getPod_zg(),lift.getKey());
+                liftTravels =new DIzalo_kretanja(p_k,z_k,n_k,v_k,start_time,end_time,count_p, dizalo.getZgrada(), dizalo.getPod_zg(), dizalo.getKey());
                 //System.out.println("TEST: "+liftTravels.toString());
 
-                lift_state=new Lift_state(Integer.toString(z_k),Integer.toString(count_p),String.valueOf(batteryPct) + "%","miruje");
+                dizalo_stanje =new Dizalo_stanje(Integer.toString(z_k),Integer.toString(count_p),String.valueOf(batteryPct) + "%","miruje");
                 Map<String, Object> childUpdates = new HashMap<>();
-                childUpdates.put( lift.getKey(), lift_state);
+                childUpdates.put( dizalo.getKey(), dizalo_stanje);
                 //System.out.println("TEST6 : "+childUpdates.toString());
                 myRef2.updateChildren(childUpdates);
                 save_data_travels();
@@ -297,10 +298,12 @@ public class Mjerenje extends AppCompatActivity implements View.OnClickListener,
 
     }
     private void postavi_vrijednosti(){
-        p_k=getRandomNumber(n_k,v_k);
+
+        p_k=getRandomNumber(n_k-1,v_k);
         z_k=getRandomNumber(p_k,v_k);
 
         while(p_k==z_k){
+
             z_k=getRandomNumber(p_k,(v_k+1));
         }
         start_timer();
@@ -321,52 +324,7 @@ public class Mjerenje extends AppCompatActivity implements View.OnClickListener,
     //cloud mesaging
     @Override
     public void onPointerCaptureChanged(boolean hasCapture) {
-        Log.d("Pointer:", String.valueOf(hasCapture));
 
-    }
-    @OnLifecycleEvent(Lifecycle.Event.ON_RESUME)
-    public void onResume() {
-        super.onResume();
-        prefs = getSharedPreferences("shared_pref_name", Context.MODE_PRIVATE);
-
-        myRefMjeri.child(lift_key).addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull @NotNull DataSnapshot snapshot) {
-                Log.d("Mjeri", snapshot.toString());
-                if (snapshot.getValue() == null) {
-                    state_mjeri_li.setU_uid(prefs.getString("u_uid", null));
-                    if (vrti) {
-                        state_mjeri_li.setState(true);
-                    } else {
-                        state_mjeri_li.setState(false);
-                    }
-                } else {
-                    state_mjeri_li = snapshot.getValue(State.class);
-                }
-            }
-
-            @Override
-            public void onCancelled(@NonNull @NotNull DatabaseError error) {
-
-            }
-        });
-
-
-        myRefLift.child(lift_key).addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull @NotNull DataSnapshot snapshot) {
-                lift = snapshot.getValue(Lift.class);
-                lift.setKey(snapshot.getKey());
-                lift_naziv.setText(lift.getIme());
-                n_k = lift.getN_k();
-                v_k = lift.getV_k();
-            }
-
-            @Override
-            public void onCancelled(@NonNull @NotNull DatabaseError error) {
-
-            }
-        });
     }
 
 }

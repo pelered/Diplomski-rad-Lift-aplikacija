@@ -1,16 +1,16 @@
 package com.example.lift11.Model;
 
-public class User {
+public class Korisnik {
     private String uid;
     private String email;
     private Boolean emailVerified;
 
-    public User(String uid, String email, Boolean emailVerified) {
+    public Korisnik(String uid, String email, Boolean emailVerified) {
         this.uid = uid;
         this.email = email;
         this.emailVerified = emailVerified;
     }
-    public User(){
+    public Korisnik(){
 
     }
 
@@ -40,7 +40,7 @@ public class User {
 
     @Override
     public String toString() {
-        return "User{" +
+        return "Korisnik{" +
                 "uid='" + uid + '\'' +
                 ", email='" + email + '\'' +
                 ", emailVerified=" + emailVerified +

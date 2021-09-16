@@ -41,6 +41,7 @@
 
     <Button
         android:id="@+id/start_mj"
+        android:textAllCaps="false"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="156dp"
@@ -52,6 +53,7 @@
 
     <TextView
         android:id="@+id/stanje_mj"
+
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="40dp"
@@ -63,6 +65,7 @@
 
     <Button
         android:id="@+id/stop_mj"
+        android:textAllCaps="false"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="28dp"
@@ -76,11 +79,12 @@
         android:id="@+id/log_out"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="132dp"
-        android:text="Log out"
+        android:layout_marginTop="52dp"
+        android:text="Odjava"
+        android:textAllCaps="false"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.498"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/stop_mj" />
+        app:layout_constraintTop_toBottomOf="@+id/stanje_mj" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

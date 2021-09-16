@@ -5,17 +5,15 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
-import com.example.lift11.Model.User;
+import com.example.lift11.Model.Korisnik;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
@@ -28,14 +26,14 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.Objects;
 
-public class Login extends AppCompatActivity {
+public class Prijava extends AppCompatActivity {
     private FirebaseAuth mAuth;
     private DatabaseReference myRef ;
     private FirebaseDatabase database;
     private SharedPreferences prefs;
     private EditText email,password;
     private Button login;
-    private User user_dohvati;
+    private Korisnik korisnik_dohvati;
     private AlertDialog.Builder builder;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -79,9 +77,8 @@ public class Login extends AppCompatActivity {
                 myRef.child(user.getUid()).addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
                     public void onDataChange(@NonNull @NotNull DataSnapshot snapshot) {
-                        user_dohvati= snapshot.getValue(User.class);
-                        Log.d("log():",user_dohvati.toString());
-                        assert user_dohvati != null;
+                        korisnik_dohvati = snapshot.getValue(Korisnik.class);
+                        assert korisnik_dohvati != null;
                         start();
                     }
                     @Override
@@ -105,9 +102,9 @@ public class Login extends AppCompatActivity {
 
     private void start() {
         SharedPreferences.Editor editor = prefs.edit();
-        editor.putString("email", user_dohvati.getEmail());
-        editor.putString("u_uid", user_dohvati.getUid());
-        editor.putBoolean("verified", user_dohvati.getEmailVerified());
+        editor.putString("email", korisnik_dohvati.getEmail());
+        editor.putString("u_uid", korisnik_dohvati.getUid());
+        editor.putBoolean("verified", korisnik_dohvati.getEmailVerified());
         editor.apply();
         Intent intent = new Intent(this, Odabir.class);
         startActivity(intent);

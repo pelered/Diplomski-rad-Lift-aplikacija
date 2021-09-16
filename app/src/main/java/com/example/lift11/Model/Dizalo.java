@@ -2,7 +2,7 @@ package com.example.lift11.Model;
 
 import androidx.recyclerview.widget.RecyclerView;
 
-public class Lift {
+public class Dizalo {
     private String ime;
     private String zgrada;
     private String pod_zg;
@@ -19,9 +19,9 @@ public class Lift {
 
 
 
-    public Lift() {
+    public Dizalo() {
     }
-    public Lift(String ime, String zgrada, String pod_zg, String u_uid, int n_k, int v_k,boolean is_connected) {
+    public Dizalo(String ime, String zgrada, String pod_zg, String u_uid, int n_k, int v_k, boolean is_connected) {
         this.ime = ime;
         this.zgrada = zgrada;
         this.pod_zg = pod_zg;
@@ -31,7 +31,7 @@ public class Lift {
         this.is_connected=is_connected;
     }
 
-    public Lift(String ime, String zgrada, String pod_zg, String u_uid, int n_k, int v_k) {
+    public Dizalo(String ime, String zgrada, String pod_zg, String u_uid, int n_k, int v_k) {
         this.ime = ime;
         this.zgrada = zgrada;
         this.pod_zg = pod_zg;
@@ -39,14 +39,14 @@ public class Lift {
         this.n_k = n_k;
         this.v_k = v_k;
     }
-    public Lift(String ime, String zgrada,  String u_uid, int n_k, int v_k) {
+    public Dizalo(String ime, String zgrada, String u_uid, int n_k, int v_k) {
         this.ime = ime;
         this.zgrada = zgrada;
         this.u_uid = u_uid;
         this.n_k = n_k;
         this.v_k = v_k;
     }
-    public Lift(String ime, String zgrada,  String u_uid, int n_k, int v_k,boolean is_connected) {
+    public Dizalo(String ime, String zgrada, String u_uid, int n_k, int v_k, boolean is_connected) {
         this.ime = ime;
         this.zgrada = zgrada;
         this.u_uid = u_uid;
@@ -55,7 +55,7 @@ public class Lift {
         this.is_connected=is_connected;
     }
 
-    public Lift(String ime, String zgrada, String pod_zg, String u_uid, int n_k, int v_k, Boolean is_connected, int max_ac, int min_ac) {
+    public Dizalo(String ime, String zgrada, String pod_zg, String u_uid, int n_k, int v_k, Boolean is_connected, int max_ac, int min_ac) {
         this.ime = ime;
         this.zgrada = zgrada;
         this.pod_zg = pod_zg;
@@ -164,7 +164,7 @@ public class Lift {
 
     @Override
     public String toString() {
-        return "Lift{" +
+        return "Dizalo{" +
                 "ime='" + ime + '\'' +
                 ", zgrada='" + zgrada + '\'' +
                 ", pod_zg='" + pod_zg + '\'' +

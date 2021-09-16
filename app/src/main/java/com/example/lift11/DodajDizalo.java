@@ -17,7 +17,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
-import com.example.lift11.Model.Lift;
+import com.example.lift11.Model.Dizalo;
 import com.example.lift11.Model.Zgrada;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -32,16 +32,16 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
-public class DodajLift extends AppCompatActivity implements View.OnClickListener {
+public class DodajDizalo extends AppCompatActivity implements View.OnClickListener {
     private FirebaseDatabase database;
     private DatabaseReference myRef;
     private Button dodaj;
     private AutoCompleteTextView naziv_zg,naziv_pod,naziv_lift;
     private EditText n_k,v_k;
     private ArrayList<Zgrada> zg,podzg;
-    private ArrayList<Lift> lifts;
+    private ArrayList<Dizalo> dizala;
     private Zgrada zgrada_obj;
-    private Lift lift;
+    private Dizalo dizalo;
     private SharedPreferences prefs;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -56,7 +56,7 @@ public class DodajLift extends AppCompatActivity implements View.OnClickListener
         v_k=findViewById(R.id.v_k);
         zg=new ArrayList<>();
         podzg=new ArrayList<>();
-        lifts=new ArrayList<>();
+        dizala =new ArrayList<>();
 
         prefs = Objects.requireNonNull(this).getSharedPreferences("shared_pref_name", Context.MODE_PRIVATE);
 
@@ -139,8 +139,8 @@ public class DodajLift extends AppCompatActivity implements View.OnClickListener
             @Override
             public void onDataChange(@NonNull @NotNull DataSnapshot snapshot) {
                 for(DataSnapshot recipeSnapshot: snapshot.getChildren()) {
-                    lifts.add(recipeSnapshot.getValue(Lift.class));
-                    lifts.get(lifts.size()-1).setKey(recipeSnapshot.getKey());
+                    dizala.add(recipeSnapshot.getValue(Dizalo.class));
+                    dizala.get(dizala.size()-1).setKey(recipeSnapshot.getKey());
                 }
             }
 
@@ -164,40 +164,33 @@ public class DodajLift extends AppCompatActivity implements View.OnClickListener
                 if(naziv_pod.getText().toString().trim().equals("")){
                     //nema podzgradu
                     final Boolean[] postoji = {false};
-                    Log.d("Tu:","1");
-                    lifts.forEach((element)->{
-                        Log.d("Tu:","1.1");
+                    dizala.forEach((element)->{
                         //svi liftovi korisnika
                         if(element.getIme().equals(naziv_lift.getText().toString())){
-                            Log.d("Tu:","1.2");
-                            //trenutni lift iz liste svih liftova ima isti naziv kao i potencijalni novi lift
-                            //ako postoji lift s tim nazivom provjeri dali pripada zgradi s istim nazivom
+                            //trenutni dizalo iz liste svih liftova ima isti naziv kao i potencijalni novi dizalo
+                            //ako postoji dizalo s tim nazivom provjeri dali pripada zgradi s istim nazivom
                             zg.forEach((el_zg)->{
-                                Log.d("Tu:","1.3");
                                 //popis svi zgrada korisnika
                                 if(el_zg.getLifts().contains(element.getKey()) && el_zg.getIme().equals(naziv_zg.getText().toString())){
-                                    Log.d("Tu:","1.4");
-                                    //provjeravamo da trenutna zgrada u listi svojih liftova ima lift s novim nazivom
+                                    //provjeravamo da trenutna zgrada u listi svojih liftova ima dizalo s novim nazivom
                                     postoji[0] =true;
                                     //ima isti naziv pa stavljamo na true
-                                    Toast.makeText(getApplicationContext(),"Lift s tim imenom postoji pod tom zgradom",Toast.LENGTH_SHORT).show();
+                                    Toast.makeText(getApplicationContext(),"Dizalo s tim imenom postoji pod tom zgradom",Toast.LENGTH_SHORT).show();
                                 }
                             });
                         }
                     });
                     if(!postoji[0]){
-                        Log.d("Tu:","2");
-                        //dodajemo novi lift
+                        //dodajemo novi dizalo
 
-                        //provjera da ne bi dodali postojeci lift
-                        //ne postoji radimo update bez dohvacanja key-a,samo lift spremamo
+                        //provjera da ne bi dodali postojeci dizalo
+                        //ne postoji radimo update bez dohvacanja key-a,samo dizalo spremamo
                         if(zg.size()==0){
                             //ako uopce ne postoji nijedna zgrada
-                            Log.d("Tu:","2.0");
 
                             String key_zg,key_lift;
                             ArrayList lifts=new ArrayList();
-                            //spremi ako zgrada s tim nazivom nema lift tog naziva;
+                            //spremi ako zgrada s tim nazivom nema dizalo tog naziva;
                             key_zg=save_zgradu(naziv_zg.getText().toString(),prefs.getString("u_uid",null));
                             key_lift= save_liftoveZg(key_zg,naziv_lift.getText().toString(),prefs.getString("u_uid",null));
                             lifts.add(key_lift);
@@ -210,30 +203,25 @@ public class DodajLift extends AppCompatActivity implements View.OnClickListener
                             final boolean[] pr3 = {false};
                             pr3[0]=false;
                             for(int i=0; i<zg.size();i++){
-                                Log.d("Tu:","2.1");
                                 if(naziv_zg.getText().toString().equals(zg.get(i).getIme())){
                                     pr3[0]=true;
-                                    Log.d("Tu:","2.2");
-                                    //dodajemo lift u postojecu zgradu
+                                    //dodajemo dizalo u postojecu zgradu
                                     String key_lift;
-                                    //spremi ako zgrada s tim nazivom nema lift tog naziva;
-                                    Log.d("Tu2.2.1:","key:"+zg.get(i).getKey()+"Ime:"+naziv_zg.getText().toString()+"User id:"+
-                                            prefs.getString("u_uid",null)+"Liftovi:"+zg.get(i).getLifts().toString());
+                                    //spremi ako zgrada s tim nazivom nema dizalo tog naziva;
+
                                     key_lift= save_liftoveZg(zg.get(i).getKey(),naziv_lift.getText().toString(),prefs.getString("u_uid",null));
                                     zg.get(i).getLifts().add(key_lift);
-                                    Log.d("Tu2.2.1:","key:"+zg.get(i).getKey()+"Ime:"+naziv_zg.getText().toString()+"User id:"+
-                                            prefs.getString("u_uid",null)+"Liftovi:"+zg.get(i).getLifts().toString());
+
                                     save_zgrade_update(zg.get(i).getKey(),naziv_zg.getText().toString(),prefs.getString("u_uid",null),zg.get(i).getLifts());
                                     editor.putString("lift_id",key_lift);
                                     editor.apply();
                                     Intent intent = new Intent(this, Mjerenje.class);
                                     startActivity(intent);
                                 }else if(i==zg.size()-1 && !pr3[0]){
-                                    Log.d("Tu:","2.3");
                                     //stvaramo novu zgradu s novim liftom
                                     String key_zg,key_lift;
                                     ArrayList lifts=new ArrayList();
-                                    //spremi ako zgrada s tim nazivom nema lift tog naziva;
+                                    //spremi ako zgrada s tim nazivom nema dizalo tog naziva;
                                     key_zg=save_zgradu(naziv_zg.getText().toString(),prefs.getString("u_uid",null));
                                     key_lift= save_liftoveZg(key_zg,naziv_lift.getText().toString(),prefs.getString("u_uid",null));
                                     lifts.add(key_lift);
@@ -250,23 +238,22 @@ public class DodajLift extends AppCompatActivity implements View.OnClickListener
 
                 }else{
                     //ima podzgradu
-                    Log.d("Tu:","3");
                     final Boolean[] postoji = {false};
-                    lifts.forEach((element)->{
+                    dizala.forEach((element)->{
                         //svi liftovi korisnika
                         if(element.getIme().equals(naziv_lift.getText().toString())){
-                            //trenutni lift iz liste svih liftova ima isti naziv kao i potencijalni novi list
-                            //ako postoji lift s tim nazivom provjeri dali pripada zgradi s istim nazivom
+                            //trenutni dizalo iz liste svih liftova ima isti naziv kao i potencijalni novi list
+                            //ako postoji dizalo s tim nazivom provjeri dali pripada zgradi s istim nazivom
                             zg.forEach((el_zg)->{
                                 //popis svi zgrada korisnika
                                 if(el_zg.getLifts().contains(element.getKey()) && el_zg.getIme().equals(naziv_zg.getText().toString())){
-                                    //provjeravamo da trenutna zgrada u listi svojih liftova ima lift s novim nazivom
-                                    //sad moramo jos provjeriti da lift ne pripada podzgradi koju smo odabrali
+                                    //provjeravamo da trenutna zgrada u listi svojih liftova ima dizalo s novim nazivom
+                                    //sad moramo jos provjeriti da dizalo ne pripada podzgradi koju smo odabrali
                                     podzg.forEach((el_podzg)->{
                                         if(el_podzg.getLifts().contains(element.getKey()) && el_podzg.getIme().equals(naziv_pod.getText().toString())) {
                                             postoji[0] =true;
                                             //ima isti naziv pa stavljamo na true
-                                            Toast.makeText(getApplicationContext(),"Lift s tim imenom postoji pod tom podzgradom",Toast.LENGTH_SHORT).show();
+                                            Toast.makeText(getApplicationContext(),"Dizalo s tim imenom postoji pod tom podzgradom",Toast.LENGTH_SHORT).show();
 
                                         }
 
@@ -276,27 +263,24 @@ public class DodajLift extends AppCompatActivity implements View.OnClickListener
                         }
                     });
                     if(!postoji[0]){
-                        Log.d("Tu:","4");
-                        //dodajemo novi lift
-                        //provjera da ne bi dodali postojeci lift
-                        //ne postoji radimo update bez dohvacanja key-a,samo lift spremamo
+
+                        //dodajemo novi dizalo
+                        //provjera da ne bi dodali postojeci dizalo
+                        //ne postoji radimo update bez dohvacanja key-a,samo dizalo spremamo
                         final boolean[] pr = {false};
                         pr[0] =false;
                         final boolean[] pr2 = {false};
                         pr2[0] =false;
                         for(int i=0; i<zg.size();i++){
                             //prolazimo sve postojece zgrade
-                            Log.d("Tu:","4.1");
                             if(naziv_zg.getText().toString().equals(zg.get(i).getIme())){
-                                //dodajemo lift u postojecu zgradu,udemo samo jednom jer ne smiju bit 2 zg s istime imenom
-                                Log.d("Tu:","4.2");
+                                //dodajemo dizalo u postojecu zgradu,udemo samo jednom jer ne smiju bit 2 zg s istime imenom
                                 int finalI = i;
                                 for(int k=0;k<podzg.size();k++) {
                                     if (naziv_pod.getText().toString().equals(podzg.get(k).getIme()) && zg.get(finalI).getPodzg().contains(podzg.get(k).getKey())) {
                                         pr[0] = true;
                                         pr2[0] =true;
-                                        Log.d("Tu:", "4.4");
-                                        //dodajemo lift u postojecu podzgradu
+                                        //dodajemo dizalo u postojecu podzgradu
                                         String key_lift;
                                         //spremamo zgradu i dobivamo njezin kljuc ,takoder isto za podzgradu radimo
                                         key_lift=save_liftove(podzg.get(k).getZg_id(),podzg.get(k).getKey(),naziv_lift.getText().toString(),prefs.getString("u_uid",null));
@@ -317,7 +301,6 @@ public class DodajLift extends AppCompatActivity implements View.OnClickListener
                                 //ako nije nadena podzg s imenom dodajemo novu podzg u postojecu zgradu
                                 if(!pr[0]){
                                     pr2[0] =true;
-                                    Log.d("Tu:","4.5");
                                     String key_lift,key_podzg;
                                     ArrayList lifts=new ArrayList();
                                     ArrayList podzg=new ArrayList();
@@ -337,7 +320,6 @@ public class DodajLift extends AppCompatActivity implements View.OnClickListener
                                     break;
                                 }
                             }else if(i==zg.size()-1 && !pr2[0]){
-                                Log.d("Tu:","4.7");
                                 //stvaramo novu zgradu s novim liftom i novom podzgradom
                                 //provjera da nismo napravili vec
                                 String key_zg,key_lift,key_podzg;
@@ -381,9 +363,7 @@ public class DodajLift extends AppCompatActivity implements View.OnClickListener
     }
     private void save_zgrade_update(String key,String zgrada,String user,ArrayList<String> lista_liftova) {
        myRef=database.getInstance().getReference("Projekti/Zgrade");
-        Log.d("Tu5.1","Key:"+key+"Ime:"+zgrada+"User_id:"+user+"Liftovi:"+lista_liftova.toString());
         zgrada_obj=new Zgrada(zgrada,user,lista_liftova);
-        Log.d("Tu5",zgrada_obj.toString());
         Map<String, Object> childUpdates2 = new HashMap<>();
         childUpdates2.put( key, zgrada_obj);
         myRef.updateChildren(childUpdates2);
@@ -425,8 +405,8 @@ public class DodajLift extends AppCompatActivity implements View.OnClickListener
         String key=myRef.push().getKey();
         Map<String, Object> childUpdates = new HashMap<>();
         //id za zgradu i podzgradu dodati
-        lift=new Lift(lift_naziv,zgrada,podzgrada,user,Integer.parseInt(n_k.getText().toString()),Integer.parseInt(v_k.getText().toString()),true);
-        childUpdates.put( key, lift);
+        dizalo =new Dizalo(lift_naziv,zgrada,podzgrada,user,Integer.parseInt(n_k.getText().toString()),Integer.parseInt(v_k.getText().toString()),true);
+        childUpdates.put( key, dizalo);
         myRef.updateChildren(childUpdates);
         return key;
 
@@ -438,8 +418,8 @@ public class DodajLift extends AppCompatActivity implements View.OnClickListener
         String key=myRef.push().getKey();
         Map<String, Object> childUpdates = new HashMap<>();
         //id za zgradu i podzgradu dodati
-        lift=new Lift(lift_naziv,zgrada,user,Integer.parseInt(n_k.getText().toString()),Integer.parseInt(v_k.getText().toString()),true);
-        childUpdates.put( key, lift);
+        dizalo =new Dizalo(lift_naziv,zgrada,user,Integer.parseInt(n_k.getText().toString()),Integer.parseInt(v_k.getText().toString()),true);
+        childUpdates.put( key, dizalo);
         //System.out.println("TEST6 : "+childUpdates.toString());
         myRef.updateChildren(childUpdates);
         return key;

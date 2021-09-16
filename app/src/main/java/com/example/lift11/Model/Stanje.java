@@ -1,14 +1,14 @@
 package com.example.lift11.Model;
 
-public class State {
+public class Stanje {
     private Boolean state;
     private String key;
     private String u_uid;
-    public State() {
+    public Stanje() {
 
     }
 
-    public State(Boolean state, String u_uid) {
+    public Stanje(Boolean state, String u_uid) {
         this.state = state;
         this.u_uid = u_uid;
     }
@@ -16,7 +16,7 @@ public class State {
 
     @Override
     public String toString() {
-        return "State{" +
+        return "Stanje{" +
                 "state=" + state +
                 ", key='" + key + '\'' +
                 ", u_uid='" + u_uid + '\'' +
@@ -33,7 +33,7 @@ public class State {
         this.u_uid = u_uid;
     }
 
-    public State(Boolean state) {
+    public Stanje(Boolean state) {
         this.state = state;
     }
 

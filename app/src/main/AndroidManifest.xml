@@ -16,15 +16,17 @@
 
         </activity>
         <activity android:name=".Mjerenje" />
-        <activity android:name=".Login">
+        <activity android:name=".Prijava">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".DodajLift" />
-        <activity android:name=".MainActivity" />
+        <activity android:name=".DodajDizalo" />
+        <activity android:name=".GlavnaAktivnost" >
+
+        </activity>
     </application>
 
 </manifest>

@@ -1,15 +1,15 @@
 package com.example.lift11.Model;
 
-public class Lift_state {
+public class Dizalo_stanje {
     private String t_k;
     private String c_p;
     private String b_p;
     private String state;
 
-    public Lift_state() {
+    public Dizalo_stanje() {
     }
 
-    public Lift_state(String t_k, String c_p, String b_p, String state) {
+    public Dizalo_stanje(String t_k, String c_p, String b_p, String state) {
         this.t_k = t_k;
         this.c_p = c_p;
         this.b_p = b_p;
@@ -50,7 +50,7 @@ public class Lift_state {
 
     @Override
     public String toString() {
-        return "Lift_state{" +
+        return "Dizalo_stanje{" +
                 "t_k='" + t_k + '\'' +
                 ", c_p='" + c_p + '\'' +
                 ", b_p='" + b_p + '\'' +

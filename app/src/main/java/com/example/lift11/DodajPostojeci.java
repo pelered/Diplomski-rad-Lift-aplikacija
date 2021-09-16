@@ -13,7 +13,7 @@ import android.util.Log;
 import android.widget.ProgressBar;
 
 import com.example.lift11.Adapter.IspisOldAdapter;
-import com.example.lift11.Model.Lift;
+import com.example.lift11.Model.Dizalo;
 import com.example.lift11.Model.Zgrada;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -33,7 +33,7 @@ public class DodajPostojeci extends AppCompatActivity {
     private DatabaseReference myRefLift, myRefZg, myRefPodzg;
     private FirebaseDatabase database;
     private SharedPreferences prefs;
-    private ArrayList<Lift> lifts;
+    private ArrayList<Dizalo> dizala;
     private IspisOldAdapter myadapter;
     private RecyclerView recyclerViewHome;
     private LinearLayoutManager layoutManager;
@@ -66,19 +66,18 @@ public class DodajPostojeci extends AppCompatActivity {
         recyclerViewHome.scrollToPosition(0);
         //
 
-        lifts=new ArrayList<>();
+        dizala =new ArrayList<>();
         final boolean[] cekaj = {false};
         Log.d("Userje:",id_user);
 
         myRefLift.orderByChild("u_uid").equalTo(id_user).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull @NotNull DataSnapshot snapshot) {
-                Log.d("Liftovi:",snapshot.toString());
                 for(DataSnapshot recipeSnapshot: snapshot.getChildren()) {
-                    if(recipeSnapshot.getValue(Lift.class).getIs_connected()!=null) {
-                        if (!recipeSnapshot.getValue(Lift.class).getIs_connected()) {
-                            lifts.add(recipeSnapshot.getValue(Lift.class));
-                            lifts.get(lifts.size()-1).setKey(recipeSnapshot.getKey());
+                    if(recipeSnapshot.getValue(Dizalo.class).getIs_connected()!=null) {
+                        if (!recipeSnapshot.getValue(Dizalo.class).getIs_connected()) {
+                            dizala.add(recipeSnapshot.getValue(Dizalo.class));
+                            dizala.get(dizala.size()-1).setKey(recipeSnapshot.getKey());
 
 
                         }
@@ -96,21 +95,19 @@ public class DodajPostojeci extends AppCompatActivity {
             }
         });
 
-        Log.d("List0",lifts.toString());
 
 
     }
 
     private void dohvatiZg() {
-        for(int i=0;i<lifts.size();i++){
+        for(int i = 0; i< dizala.size(); i++){
             int finalI = i;
-            myRefZg.orderByKey().equalTo(lifts.get(i).getZgrada()).addListenerForSingleValueEvent(new ValueEventListener() {
+            myRefZg.orderByKey().equalTo(dizala.get(i).getZgrada()).addListenerForSingleValueEvent(new ValueEventListener() {
                 @Override
                 public void onDataChange(@NonNull @NotNull DataSnapshot snapshot) {
                     for(DataSnapshot recipe1: snapshot.getChildren()) {
                         String ime_p=recipe1.getValue(Zgrada.class).getIme();
-                        lifts.get(finalI).setZg_ime(ime_p);
-                        Log.d("ZgradaIme:",finalI+lifts.toString());
+                        dizala.get(finalI).setZg_ime(ime_p);
 
 
                     }
@@ -126,15 +123,15 @@ public class DodajPostojeci extends AppCompatActivity {
     }
 
     private void setPod(){
-        for(int i=0;i<lifts.size();i++){
-            if(lifts.get(i).getPod_zg()!=null){
+        for(int i = 0; i< dizala.size(); i++){
+            if(dizala.get(i).getPod_zg()!=null){
                 int finalI1 = i;
-                myRefPodzg.orderByKey().equalTo(lifts.get(i).getPod_zg()).addListenerForSingleValueEvent(new ValueEventListener() {
+                myRefPodzg.orderByKey().equalTo(dizala.get(i).getPod_zg()).addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
                     public void onDataChange(@NonNull @NotNull DataSnapshot snapshot) {
                         for(DataSnapshot recipe1: snapshot.getChildren()) {
                             String ime_p=recipe1.getValue(Zgrada.class).getIme();
-                            lifts.get(finalI1).setPod_ime(ime_p);
+                            dizala.get(finalI1).setPod_ime(ime_p);
                         }
                     }
                     @Override
@@ -166,7 +163,7 @@ public class DodajPostojeci extends AppCompatActivity {
         layoutManager.setStackFromEnd(true);
         recyclerViewHome.scrollToPosition(0);
 
-        myadapter= new IspisOldAdapter(getApplicationContext(), lifts);
+        myadapter= new IspisOldAdapter(getApplicationContext(), dizala);
         recyclerViewHome.setAdapter(myadapter);
     }
 }
